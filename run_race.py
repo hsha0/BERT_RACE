@@ -322,7 +322,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         """The model_fn` for Estimator`"""
 
         tf.logging.info("*** Features ***")
-        for name in sorted(features.keys())
+        for name in sorted(features.keys()):
             tf.logging.info("  name = %s, shape = %s" % (name, features[name].shape))
 
         four_options = features["four_options"]
@@ -373,7 +373,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 }
 
             eval_metrics = (metric_fn,
-                            [per_example_loss, label_ids, logits, is_real_example])
+                            [per_example_loss, label_ids, logits])
             output_spec = tf.contrib.tpu.TPUEstimatorSpec(
                 mode=mode,
                 loss=total_loss,
