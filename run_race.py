@@ -274,10 +274,10 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
                  use_one_hot_embeddings):
     CLSs = []
     hidden_size = 0
-    for option in four_options:
-        input_ids = option.input_ids
-        input_mask = option.input_mask
-        segment_ids = option.segment_ids
+    for i in range(4):
+        input_ids = four_options[0][i]
+        input_mask = four_options[1][i]
+        segment_ids = four_options[2][i]
 
         model = modeling.BertModel(
             config=bert_config,
@@ -403,7 +403,17 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
     all_label_ids = []
 
     for feature in features:
-        all_four_options.append(feature.four_options)
+        four_options_input_ids = []
+        four_options_input_mask = []
+        four_options_segment_ids = []
+        for option in feature.four_options:
+            four_options_input_ids.append(option.input_ids)
+            four_options_input_mask.append(option.input_mask)
+            four_options_segment_ids.append(option.segment_ids)
+
+        all_four_options.append(four_options_input_ids)
+        all_four_options.append(four_options_input_mask)
+        all_four_options.append(four_options_segment_ids)
         all_label_ids.append(feature.label_id)
 
     def input_fn(params):
@@ -415,7 +425,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         d = tf.data.Dataset.from_tensor_slices({
             "four_options":
                 tf.constant(
-                    all_four_options, shape=[num_examples, 4, seq_length]),
+                    all_four_options, shape=[num_examples, 4, 3, seq_length]),
             "label_ids":
                 tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
         })
