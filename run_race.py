@@ -274,7 +274,6 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
                  use_one_hot_embeddings):
     CLSs = []
     for i in range(4):
-        print(i)
         input_ids = four_options[0][i]
         input_mask = four_options[1][i]
         segment_ids = four_options[2][i]
@@ -290,8 +289,8 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
         output_layer = model.get_pooled_output()
         CLSs.append(output_layer)
 
-    print(len(CLSs))
     CLSs = tf.stack(CLSs)
+    tf.print(CLSs)
     print('CLSs shape:', tf.shape(CLSs))
 
     output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
