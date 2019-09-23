@@ -426,6 +426,9 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
 def main():
     tf.logging.set_verbosity(tf.logging.INFO)
 
+    tokenizer = tokenization.FullTokenizer(
+        vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
+
     if not FLAGS.do_train and not FLAGS.do_eval and not FLAGS.do_predict:
         raise ValueError(
             "At least one of `do_train`, `do_eval` or `do_predict' must be True.")
@@ -498,12 +501,11 @@ def main():
 
 
 
-    examples = create_examples(FLAGS.data_dir)
-    tokenizer = tokenization.FullTokenizer(
-        vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
 
 
-    convert_examples_to_features(examples, label_list, 512, tokenizer)
+
+
+
 
 if __name__ == '__main__':
     flags.mark_flag_as_required("data_dir")
