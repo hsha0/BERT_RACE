@@ -273,11 +273,11 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
 def create_model(bert_config, is_training, four_options, labels, num_labels,
                  use_one_hot_embeddings):
     CLSs = []
-    hidden_size = 0
     for i in range(4):
-        input_ids = four_options[i][0]
-        input_mask = four_options[i][1]
-        segment_ids = four_options[i][2]
+        print(i)
+        input_ids = four_options[0][i]
+        input_mask = four_options[1][i]
+        segment_ids = four_options[2][i]
 
         model = modeling.BertModel(
             config=bert_config,
@@ -289,8 +289,6 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
         output_layer = model.get_pooled_output()
         CLSs.append(output_layer)
-
-        hidden_size = output_layer.shape[-1].value
 
     print(CLSs)
     CLSs = tf.stack(CLSs)
