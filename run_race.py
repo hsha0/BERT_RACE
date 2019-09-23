@@ -290,7 +290,7 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
         output_layer = model.get_pooled_output()
         CLSs.append(output_layer)
 
-    print(CLSs)
+    print(len(CLSs))
     CLSs = tf.stack(CLSs)
     print('CLSs shape:', tf.shape(CLSs))
 
