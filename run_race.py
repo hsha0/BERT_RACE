@@ -290,10 +290,10 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
         CLSs.append(output_layer)
 
     CLSs = tf.stack(CLSs)
-    print('CLSs shape:', tf.shape(CLSs))
+    print('CLSs shape:', CLSs.shape)
 
     output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
-    print('output_layer shape:', tf.shape(output_layer))
+    print('output_layer shape:', output_layer.shape)
 
     output_weights = tf.get_variable(
         "output_weights", [num_labels, num_labels],
@@ -306,7 +306,7 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
         if is_training:
             # I.e., 0.1 dropout
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
-        print('output_layer shape:', tf.shape(output_layer))
+        print('output_layer shape:', output_layer.shape)
         logits = tf.matmul(output_layer, output_weights, transpose_b=True)
         logits = tf.nn.bias_add(logits, output_bias)
         probabilities = tf.nn.softmax(logits, axis=-1)
