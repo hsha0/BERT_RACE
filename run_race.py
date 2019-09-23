@@ -404,7 +404,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
 
     for feature in features:
         all_four_options.append(feature.four_options)
-        all_label_ids.append(features.label_id)
+        all_label_ids.append(feature.label_id)
 
     def input_fn(params):
         """The actual input function."""
