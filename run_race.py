@@ -84,6 +84,10 @@ flags.DEFINE_integer("iterations_per_loop", 1000,
 
 tf.flags.DEFINE_string("master", None, "[Optional] TensorFlow master URL.")
 
+flags.DEFINE_integer(
+    "num_tpu_cores", 8,
+    "Only used if `use_tpu` is True. Total number of TPU cores to use.")
+
 class RaceExample(object):
     """A single training/test example for RACE"""
 
