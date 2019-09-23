@@ -292,7 +292,7 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
         hidden_size = output_layer.shape[-1].value
 
-
+    print(CLSs)
     CLSs = tf.stack(CLSs)
     print('CLSs shape:', tf.shape(CLSs))
 
