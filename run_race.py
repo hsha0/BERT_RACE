@@ -294,6 +294,7 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
 
     CLSs = tf.stack(CLSs)
+    print('CLSs shape:', tf.shape(CLSs))
 
     output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
     print('output_layer shape:', tf.shape(output_layer))
