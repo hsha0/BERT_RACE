@@ -287,6 +287,7 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
             use_one_hot_embeddings=use_one_hot_embeddings)
 
         output_layer = model.get_pooled_output()
+        print('zhen output_layer:', output_layer.shape)
         CLSs.append(output_layer)
 
     CLSs = tf.stack(CLSs)
