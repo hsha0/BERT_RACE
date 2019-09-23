@@ -275,9 +275,9 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
     CLSs = []
     hidden_size = 0
     for i in range(4):
-        input_ids = four_options[0][i]
-        input_mask = four_options[1][i]
-        segment_ids = four_options[2][i]
+        input_ids = four_options[i][0]
+        input_mask = four_options[i][1]
+        segment_ids = four_options[i][2]
 
         model = modeling.BertModel(
             config=bert_config,
