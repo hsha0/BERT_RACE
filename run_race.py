@@ -416,7 +416,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
             "four_options":
                 tf.constant(
                     all_four_options, shape=[num_examples, 4, seq_length],
-                    dtype=tf.int32),
+                    dtype=Option),
             "label_ids":
                 tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
         })
