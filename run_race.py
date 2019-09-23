@@ -142,7 +142,7 @@ def create_examples(data_dir):
         return examples
 
     if not os.path.exists(data_dir):
-        sys.exit(data_dir, "doesn't exist.")
+        sys.exit(data_dir + " doesn't exist.")
     pre_dir = os.getcwd()
     os.chdir(data_dir)
     file_list = sorted(glob.glob('*.txt'), key=lambda x:int(x[:-4]))
