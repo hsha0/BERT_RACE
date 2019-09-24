@@ -296,7 +296,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
 
     batch_size = output_layer.shape[0].value
 
-    linear_layer = tf.layers.dense(output_layer, batch_size/num_labels, activation=None)
+    linear_layer = tf.layers.dense(output_layer, 1, activation=None)
 
     print(linear_layer.shape)
 
