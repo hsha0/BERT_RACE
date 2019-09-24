@@ -133,6 +133,18 @@ class Option(object):
         self.input_mask = input_mask
         self.segment_ids = segment_ids
 
+class PaddingInputExample(object):
+  """Fake example so the num input examples is a multiple of the batch size.
+
+  When running eval/predict on the TPU, we need to pad the number of examples
+  to be a multiple of the batch size, because the TPU requires a fixed batch
+  size. The alternative is to drop the last batch, which is bad because it means
+  the entire output data won't be generated.
+
+  We use this class instead of `None` because treating `None` as padding
+  battches could cause silent errors.
+  """
+
 
 def create_train_examples(data_dir):
     data_dir = data_dir+'/train/middle'
@@ -227,6 +239,14 @@ def show_example(example):
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
     """Converts a single `RaceExample` into a single `InputFeatures`."""
+
+    if isinstance(example, PaddingInputExample):
+        return InputFeatures(
+            input_ids=[0] * max_seq_length,
+            input_mask=[0] * max_seq_length,
+            segment_ids=[0] * max_seq_length,
+            label_id=0,
+            is_real_example=False)
 
     label_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
 
@@ -573,7 +593,11 @@ def main():
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
     if FLAGS.do_eval:
+
         eval_examples = create_dev_examples(FLAGS.data_dir)
+        while len(eval_examples) % FLAGS.eval_batch_size != 0:
+            eval_examples.append(PaddingInputExample())
+
         num_actual_eval_examples = len(eval_examples)
         if FLAGS.use_tpu:
             # TPU requires a fixed batch size for all batches, therefore the number
@@ -584,7 +608,7 @@ def main():
             while len(eval_examples) % FLAGS.eval_batch_size != 0:
                 eval_examples.append(PaddingInputExample())
 
-        features = convert_examples_to_features(
+        eval_features = convert_examples_to_features(
             eval_examples, label_list, FLAGS.max_seq_length, tokenizer)
 
         tf.logging.info("***** Running evaluation *****")
@@ -603,7 +627,7 @@ def main():
 
         eval_drop_remainder = True if FLAGS.use_tpu else False
         eval_input_fn = input_fn_builder(
-            features=features,
+            features=eval_features,
             seq_length=FLAGS.max_seq_length,
             is_training=False,
             drop_remainder=eval_drop_remainder)
