@@ -289,11 +289,13 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
         output_layer = model.get_pooled_output()
 
         linear_output = tf.layers.dense(output_layer, 1, activation=None)
+        print('linear output:', linear_output.shape)
         linear_outputs.append(linear_output)
 
-    print('linear outputs:', linear_outputs.shape)
 
-    output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
+    linear_outputs = tf.stack(linear_outputs)
+    print('linear outputs:', linear_outputs.shape)
+    output_layer = tf.layers.dense(linear_outputs, num_labels, activation=tf.tanh)
     print('output_layer shape:', output_layer.shape)
 
     output_weights = tf.get_variable(
