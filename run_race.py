@@ -410,7 +410,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         for option in feature.four_options:
             options[0].append(option.input_ids)
             options[1].append(option.input_mask)
-            options[3].append(option.segment_ids)
+            options[2].append(option.segment_ids)
         all_four_options.append(options)
         all_label_ids.append(feature.label_id)
 
