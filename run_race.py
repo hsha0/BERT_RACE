@@ -294,7 +294,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
 
     output_layer = model.get_pooled_output()
 
-    batch_size = output_layer.shape[0].value/num_labels
+    batch_size = int(output_layer.shape[0].value/num_labels)
 
     with tf.variable_scope("loss"):
         if is_training:
