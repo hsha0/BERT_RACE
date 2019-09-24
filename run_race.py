@@ -241,12 +241,14 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     """Converts a single `RaceExample` into a single `InputFeatures`."""
 
     if isinstance(example, PaddingInputExample):
-        return InputFeature(
-            input_ids=[0] * max_seq_length,
-            input_mask=[0] * max_seq_length,
-            segment_ids=[0] * max_seq_length,
-            label_id=0,
-            is_real_example=False)
+        four_options = []
+        for i in range(len(label_list)):
+            option = Option(input_ids=[0] * max_seq_length,
+                            input_mask=[0] * max_seq_length,
+                            segment_ids=[0] * max_seq_length)
+            four_options.append(option)
+        return InputFeature(four_options = four_options,
+                            label_id=0)
 
     label_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
 
