@@ -294,7 +294,12 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
 
     output_layer = model.get_pooled_output()
 
-    print(output_layer.shape)
+    batch_size = output_layer.shape[0].value
+
+    linear_layer = tf.layers.dense(output_layer, batch_size, activation=None)
+
+    print(linear_layer.shape)
+
     sys.exit()
 
     return None, None, None, None
@@ -466,7 +471,6 @@ def main():
     num_warmup_steps = None
     if FLAGS.do_train:
         train_examples = create_examples(FLAGS.data_dir)
-        print('num examples:',len(train_examples))
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
