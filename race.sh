@@ -13,5 +13,6 @@ python3 run_race.py \
  --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt \
  --max_seq_length=256 \
  --train_batch_size=4 \
+ --eval_batch_size=4 \
  --learning_rate=2e-5 \
  --num_train_epochs=3.0 \

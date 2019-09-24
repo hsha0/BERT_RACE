@@ -597,18 +597,10 @@ def main():
     if FLAGS.do_eval:
 
         eval_examples = create_dev_examples(FLAGS.data_dir)
+        num_actual_eval_examples = len(eval_examples)
+
         while len(eval_examples) % FLAGS.eval_batch_size != 0:
             eval_examples.append(PaddingInputExample())
-
-        num_actual_eval_examples = len(eval_examples)
-        if FLAGS.use_tpu:
-            # TPU requires a fixed batch size for all batches, therefore the number
-            # of examples must be a multiple of the batch size, or else examples
-            # will get dropped. So we pad with fake examples which are ignored
-            # later on. These do NOT count towards the metric (all tf.metrics
-            # support a per-instance weight, and these get a weight of 0.0).
-            while len(eval_examples) % FLAGS.eval_batch_size != 0:
-                eval_examples.append(PaddingInputExample())
 
         eval_features = convert_examples_to_features(
             eval_examples, label_list, FLAGS.max_seq_length, tokenizer)
