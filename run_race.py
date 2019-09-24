@@ -134,7 +134,8 @@ class Option(object):
         self.segment_ids = segment_ids
 
 
-def create_examples(data_dir):
+def create_train_examples(data_dir):
+    data_dir = data_dir+'/train/middle'
     def _read_race_examples(filename):
         examples = []
         with open(filename) as json_file:
@@ -157,6 +158,60 @@ def create_examples(data_dir):
     os.chdir(pre_dir)
 
     return examples
+
+
+def create_dev_examples(data_dir):
+    data_dir = data_dir + '/dev/middle'
+
+    def _read_race_examples(filename):
+        examples = []
+        with open(filename) as json_file:
+            instance = json.load(json_file)
+            for i in range(len(instance['answers'])):
+                example = RaceExample(instance['id'] + '_' + str(i), instance['article'], instance['questions'][i],
+                                      instance['options'][i], instance['answers'][i])
+                # print_example(example)
+                examples.append(example)
+        return examples
+
+    if not os.path.exists(data_dir):
+        sys.exit(data_dir + " doesn't exist.")
+    pre_dir = os.getcwd()
+    os.chdir(data_dir)
+    file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
+    examples = []
+    for file in file_list:
+        examples.extend(_read_race_examples(file))
+    os.chdir(pre_dir)
+
+    return examples
+
+def create_eval_examples(data_dir):
+    data_dir = data_dir + '/test/middle'
+
+    def _read_race_examples(filename):
+        examples = []
+        with open(filename) as json_file:
+            instance = json.load(json_file)
+            for i in range(len(instance['answers'])):
+                example = RaceExample(instance['id'] + '_' + str(i), instance['article'], instance['questions'][i],
+                                      instance['options'][i], instance['answers'][i])
+                # print_example(example)
+                examples.append(example)
+        return examples
+
+    if not os.path.exists(data_dir):
+        sys.exit(data_dir + " doesn't exist.")
+    pre_dir = os.getcwd()
+    os.chdir(data_dir)
+    file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
+    examples = []
+    for file in file_list:
+        examples.extend(_read_race_examples(file))
+    os.chdir(pre_dir)
+
+    return examples
+
 
 
 def show_example(example):
@@ -461,7 +516,7 @@ def main():
 
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
-    label_list = ['A', 'B', 'C', 'D']
+    label_list = ['A','B','C','D']
 
     tpu_cluster_resolver = None
     is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
@@ -516,6 +571,51 @@ def main():
             is_training=True,
             drop_remainder=True)
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
+
+    if FLAGS.do_eval:
+        eval_examples = create_dev_examples(FLAGS.data_dir)
+        num_actual_eval_examples = len(eval_examples)
+        if FLAGS.use_tpu:
+            # TPU requires a fixed batch size for all batches, therefore the number
+            # of examples must be a multiple of the batch size, or else examples
+            # will get dropped. So we pad with fake examples which are ignored
+            # later on. These do NOT count towards the metric (all tf.metrics
+            # support a per-instance weight, and these get a weight of 0.0).
+            while len(eval_examples) % FLAGS.eval_batch_size != 0:
+                eval_examples.append(PaddingInputExample())
+
+        features = convert_examples_to_features(
+            eval_examples, label_list, FLAGS.max_seq_length, tokenizer)
+
+        tf.logging.info("***** Running evaluation *****")
+        tf.logging.info("  Num examples = %d (%d actual, %d padding)",
+                        len(eval_examples), num_actual_eval_examples,
+                        len(eval_examples) - num_actual_eval_examples)
+        tf.logging.info("  Batch size = %d", FLAGS.eval_batch_size)
+
+        # This tells the estimator to run through the entire set.
+        eval_steps = None
+        # However, if running eval on the TPU, you will need to specify the
+        # number of steps.
+        if FLAGS.use_tpu:
+            assert len(eval_examples) % FLAGS.eval_batch_size == 0
+            eval_steps = int(len(eval_examples) // FLAGS.eval_batch_size)
+
+        eval_drop_remainder = True if FLAGS.use_tpu else False
+        eval_input_fn = input_fn_builder(
+            features=features,
+            seq_length=FLAGS.max_seq_length,
+            is_training=False,
+            drop_remainder=eval_drop_remainder)
+
+        result = estimator.evaluate(input_fn=eval_input_fn, steps=eval_steps)
+
+        output_eval_file = os.path.join(FLAGS.output_dir, "eval_results.txt")
+        with tf.gfile.GFile(output_eval_file, "w") as writer:
+            tf.logging.info("***** Eval results *****")
+            for key in sorted(result.keys()):
+                tf.logging.info("  %s = %s", key, str(result[key]))
+                writer.write("%s = %s\n" % (key, str(result[key])))
 
 
 if __name__ == '__main__':
