@@ -292,8 +292,8 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
     CLSs = tf.stack(CLSs)
     output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
-    batch_size = output_layer[1]
-    hidden_size = output_layer[2]
+    batch_size = output_layer.shape[1]
+    hidden_size = output_layer.shape[2]
     print('output_layer shape:', output_layer.shape)
 
     output_weights = tf.get_variable(
