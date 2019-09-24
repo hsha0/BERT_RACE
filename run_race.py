@@ -312,6 +312,7 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
         print('output_layer shape:', output_layer.shape)
         logits = tf.matmul(output_layer_matrix, output_weights, transpose_b=True)
+        print('logits shape:', logits.shape)
         logits = tf.nn.bias_add(logits, output_bias)
         probabilities = tf.nn.softmax(logits, axis=-1)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
