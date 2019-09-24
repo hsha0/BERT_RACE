@@ -272,7 +272,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
 
 def create_model(bert_config, is_training, four_options, labels, num_labels,
                  use_one_hot_embeddings):
-    CLSs = []
+    linear_outputs = []
     for i in range(4):
         input_ids = four_options[0][i]
         input_mask = four_options[1][i]
@@ -287,12 +287,13 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
             use_one_hot_embeddings=use_one_hot_embeddings)
 
         output_layer = model.get_pooled_output()
-        CLSs.append(output_layer)
 
-    CLSs = tf.stack(CLSs)
-    print('CLSs shape:', CLSs.shape)
+        linear_output = tf.layers.dense(output_layer, 1, activation=None)
+        linear_outputs.append(linear_output)
 
-    output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.nn.relu)
+    print('linear outputs:', linear_outputs.shape)
+
+    output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
     print('output_layer shape:', output_layer.shape)
 
     output_weights = tf.get_variable(
