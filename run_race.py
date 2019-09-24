@@ -275,9 +275,13 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
     CLSs = []
     for i in range(4):
-        input_ids = four_options[0][i]
-        input_mask = four_options[0][i]
-        segment_ids = four_options[0][i]
+        num_examples = four_options.shape[0]
+        seq_length = four_options.shape[3]
+        four_options_reshape = tf.reshape(four_options, [4,3,num_examples, seq_length])
+
+        input_ids = four_options[i]
+        input_mask = four_options[i]
+        segment_ids = four_options[i]
 
         model = modeling.BertModel(
             config=bert_config,
