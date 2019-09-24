@@ -299,7 +299,10 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
         if is_training:
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
         logits = tf.layers.dense(output_layer, 1, activation=None)
-        print(logits.shape)
+        probabilities = tf.nn.softmax(logits, axis=-1)
+        print(probabilities.shape)
+        log_probs = tf.nn.log_softmax(logits, axis=-1)
+        print(log_probs.shape)
 
 
     sys.exit()
