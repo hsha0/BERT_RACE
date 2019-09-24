@@ -406,13 +406,13 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
     all_label_ids = []
 
     for feature in features:
-        four_options_input_ids = []
-        four_options_input_mask = []
-        four_options_segment_ids = []
-        for option in feature.four_options:
-            four_options_input_ids.append(option.input_ids)
-            four_options_input_mask.append(option.input_mask)
-            four_options_segment_ids.append(option.segment_ids)
+        four_options_input_ids = [[] for i in range(4)]
+        four_options_input_mask = [[] for i in range(4)]
+        four_options_segment_ids = [[] for i in range(4)]
+        for (i, option) in enumerate(feature.four_options):
+            four_options_input_ids[i].append(option.input_ids)
+            four_options_input_mask[i].append(option.input_mask)
+            four_options_segment_ids[i].append(option.segment_ids)
 
         all_four_options.append([four_options_input_ids, four_options_input_mask, four_options_segment_ids])
         all_label_ids.append(feature.label_id)
