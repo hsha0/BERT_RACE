@@ -316,7 +316,8 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
         logits = tf.nn.bias_add(logits, output_bias)
         probabilities = tf.nn.softmax(logits, axis=-1)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
-
+        print('log_probs shape:', log_probs.shape)
+        print(labels)
         one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
 
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
