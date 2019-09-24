@@ -275,9 +275,9 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
     CLSs = []
     for i in range(4):
-        input_ids = four_options[0][i]
-        input_mask = four_options[1][i]
-        segment_ids = four_options[2][i]
+        input_ids = four_options[i][0]
+        input_mask = four_options[i][1]
+        segment_ids = four_options[i][2]
 
         model = modeling.BertModel(
             config=bert_config,
@@ -402,20 +402,14 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 def input_fn_builder(features, seq_length, is_training, drop_remainder):
     """Creates an `input_fn` closure to be passed to Estimator."""
 
-    all_four_options = []
+    all_four_options = [[[],[],[]],[[],[],[]],[[],[],[]],[[],[],[]]]
     all_label_ids = []
 
     for feature in features:
-        four_options_input_ids = [[] for i in range(4)]
-        four_options_input_mask = [[] for i in range(4)]
-        four_options_segment_ids = [[] for i in range(4)]
         for (i, option) in enumerate(feature.four_options):
-            four_options_input_ids[i].append(option.input_ids)
-            four_options_input_mask[i].append(option.input_mask)
-            four_options_segment_ids[i].append(option.segment_ids)
-
-        all_four_options.append([four_options_input_ids, four_options_input_mask, four_options_segment_ids])
-        all_label_ids.append(feature.label_id)
+            all_four_options[i][0].append(option.input_ids)
+            all_four_options[i][1].append(option.input_mask)
+            all_four_options[i][2].append(option.segment_ids)
 
     def input_fn(params):
         """The actual input function."""
@@ -426,7 +420,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         d = tf.data.Dataset.from_tensor_slices({
             "four_options":
                 tf.constant(
-                    all_four_options, shape=[num_examples, 3, 4, seq_length]),
+                    all_four_options, shape=[ 4, 3, num_examples, seq_length]),
             "label_ids":
                 tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
         })
