@@ -90,6 +90,7 @@ flags.DEFINE_integer(
     "num_tpu_cores", 8,
     "Only used if `use_tpu` is True. Total number of TPU cores to use.")
 
+
 class RaceExample(object):
     """A single training/test example for RACE"""
 
@@ -111,6 +112,7 @@ class RaceExample(object):
         self.four_options = four_options
         self.label = label
 
+
 class InputFeature(object):
     """A single set of feature of data."""
 
@@ -119,6 +121,7 @@ class InputFeature(object):
                  label_id):
         self.four_options = four_options
         self.label_id = label_id
+
 
 class Option(object):
 
@@ -130,16 +133,16 @@ class Option(object):
         self.input_mask = input_mask
         self.segment_ids = segment_ids
 
-def create_examples(data_dir):
 
+def create_examples(data_dir):
     def _read_race_examples(filename):
         examples = []
         with open(filename) as json_file:
             instance = json.load(json_file)
-            for i in range (len(instance['answers'])):
-                example = RaceExample(instance['id']+'_'+str(i), instance['article'], instance['questions'][i],
+            for i in range(len(instance['answers'])):
+                example = RaceExample(instance['id'] + '_' + str(i), instance['article'], instance['questions'][i],
                                       instance['options'][i], instance['answers'][i])
-                #print_example(example)
+                # print_example(example)
                 examples.append(example)
         return examples
 
@@ -147,13 +150,14 @@ def create_examples(data_dir):
         sys.exit(data_dir + " doesn't exist.")
     pre_dir = os.getcwd()
     os.chdir(data_dir)
-    file_list = sorted(glob.glob('*.txt'), key=lambda x:int(x[:-4]))
+    file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
     examples = []
     for file in file_list:
         examples.extend(_read_race_examples(file))
     os.chdir(pre_dir)
 
     return examples
+
 
 def show_example(example):
     print('id:', example.id)
@@ -163,12 +167,13 @@ def show_example(example):
     print('label:', example.label)
     print('options:', example.four_options)
     print()
-    
+
+
 def convert_single_example(ex_index, example, label_list, max_seq_length,
                            tokenizer):
     """Converts a single `RaceExample` into a single `InputFeatures`."""
 
-    label_map = {'A':0, 'B':1, 'C':2, 'D':3}
+    label_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
 
     tokens_article = tokenizer.tokenize(example.article)
     tokens_question = tokenizer.tokenize(example.question)
@@ -258,8 +263,8 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
 
     return feature
 
-def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer):
 
+def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer):
     features = []
     for (ex_index, example) in enumerate(examples):
         if ex_index % 10000 == 0:
@@ -270,63 +275,28 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
         features.append(feature)
     return features
 
-def create_model(bert_config, is_training, four_options, labels, num_labels,
+
+def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, labels, num_labels,
                  use_one_hot_embeddings):
 
-    CLSs = []
-    for i in range(4):
-        num_examples = four_options.shape[0]
-        seq_length = four_options.shape[3]
-        four_options_reshape = tf.reshape(four_options, [4,3,num_examples, seq_length])
+    flat_input_ids = tf.reshape(input_ids, [-1, input_ids.shape[-1]])
+    flat_input_mask = tf.reshape(input_mask, [-1, input_mask.shape[-1]])
+    flat_segment_ids = tf.reshape(segment_ids, [-1, segment_ids.shape[-1]])
 
-        input_ids = four_options[i]
-        input_mask = four_options[i]
-        segment_ids = four_options[i]
+    model = modeling.BertModel(
+        config=bert_config,
+        is_training=is_training,
+        input_ids=flat_input_ids,
+        input_mask=flat_input_mask,
+        token_type_ids=flat_segment_ids,
+        use_one_hot_embeddings=use_one_hot_embeddings)
+    )
 
-        model = modeling.BertModel(
-            config=bert_config,
-            is_training=is_training,
-            input_ids=input_ids,
-            input_mask=input_mask,
-            token_type_ids=segment_ids,
-            use_one_hot_embeddings=use_one_hot_embeddings)
+    output_layer = model.get_pooled_output()
 
-        output_layer = model.get_pooled_output()
-        CLSs.append(output_layer)
+    print(output_layer.shape)
+    sys.exit()
 
-    CLSs = tf.stack(CLSs)
-    output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
-    batch_size = output_layer.shape[1]
-    hidden_size = output_layer.shape[2]
-    print('output_layer shape:', output_layer.shape)
-
-    output_weights = tf.get_variable(
-        "output_weights", [num_labels, num_labels],
-        initializer=tf.truncated_normal_initializer(stddev=0.02))
-
-    output_bias = tf.get_variable(
-        "output_bias", [num_labels], initializer=tf.zeros_initializer())
-
-    output_layer_matrix = tf.reshape(output_layer,
-                                     [batch_size * num_labels, hidden_size])
-
-    with tf.variable_scope("loss"):
-        if is_training:
-            # I.e., 0.1 dropout
-            output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
-        print('output_layer shape:', output_layer.shape)
-        logits = tf.matmul(output_layer_matrix, output_weights, transpose_b=True)
-        print('logits shape:', logits.shape)
-        logits = tf.nn.bias_add(logits, output_bias)
-        probabilities = tf.nn.softmax(logits, axis=-1)
-        log_probs = tf.nn.log_softmax(logits, axis=-1)
-        print('log_probs shape:', log_probs.shape)
-        one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
-
-        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-        loss = tf.reduce_mean(per_example_loss)
-
-        return (loss, per_example_loss, logits, probabilities)
 
 
 def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
@@ -403,21 +373,26 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
     return model_fn
 
+
 def input_fn_builder(features, seq_length, is_training, drop_remainder):
     """Creates an `input_fn` closure to be passed to Estimator."""
 
-    all_four_options = []
+    all_input_ids = []
+    all_input_mask = []
+    all_segment_ids = []
     all_label_ids = []
 
     for feature in features:
-        options = [[],[],[]]
+        input_ids = []
+        input_mask = []
+        segment_ids = []
         for option in feature.four_options:
-            options[0].append(option.input_ids)
-            options[1].append(option.input_mask)
-            options[2].append(option.segment_ids)
-        all_four_options.append(options)
-        all_label_ids.append(feature.label_id)
-
+            input_ids.append(option.input_ids)
+            input_mask.append(option.input_mask)
+            segment_ids.append(option.segment_ids)
+        all_input_ids.append(input_ids)
+        all_input_mask.append(input_mask)
+        all_segment_ids.append(segment_ids)
 
     def input_fn(params):
         """The actual input function."""
@@ -426,9 +401,14 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         num_examples = len(features)
 
         d = tf.data.Dataset.from_tensor_slices({
-            "four_options":
+            "input_ids":
                 tf.constant(
-                    all_four_options, shape=[num_examples, 3, 4, seq_length]),
+                    all_input_ids, shape=[num_examples, 4, seq_length]
+                ),
+            "input_mask":
+                tf.constant(all_input_mask, shape=[num_examples, 4, seq_length]),
+            "segment_ids":
+                tf.constant(all_segment_ids, shape=[num_examples, 4, seq_length]),
             "label_ids":
                 tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
         })
@@ -506,7 +486,7 @@ def main():
 
     if FLAGS.do_train:
         train_features = convert_examples_to_features(train_examples, label_list, FLAGS.max_seq_length,
-                                                tokenizer)
+                                                      tokenizer)
         tf.logging.info("***** Running training *****")
         tf.logging.info("  Num examples = %d", len(train_examples))
         tf.logging.info("  Batch size = %d", FLAGS.train_batch_size)
@@ -518,13 +498,6 @@ def main():
             is_training=True,
             drop_remainder=True)
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
-
-
-
-
-
-
-
 
 
 if __name__ == '__main__':
