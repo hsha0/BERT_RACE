@@ -289,7 +289,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
         input_ids=flat_input_ids,
         input_mask=flat_input_mask,
         token_type_ids=flat_segment_ids,
-        use_one_hot_embeddings=use_one_hot_embeddings)
+        use_one_hot_embeddings=use_one_hot_embeddings
     )
 
     output_layer = model.get_pooled_output()
