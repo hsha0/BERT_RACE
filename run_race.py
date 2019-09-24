@@ -297,6 +297,8 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
     print(output_layer.shape)
     sys.exit()
 
+    return None, None, None, None
+
 
 
 def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
@@ -310,13 +312,15 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         for name in sorted(features.keys()):
             tf.logging.info("  name = %s, shape = %s" % (name, features[name].shape))
 
-        four_options = features["four_options"]
+        input_ids = features["input_ids"]
+        input_mask = features["input_mask"]
+        segment_ids = features["segment_ids"]
         label_ids = features["label_ids"]
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
         (total_loss, per_example_loss, logits, probabilities) = create_model(
-            bert_config, is_training, four_options, label_ids,
+            bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
             num_labels, use_one_hot_embeddings)
 
         tvars = tf.trainable_variables()
