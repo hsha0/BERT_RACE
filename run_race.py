@@ -354,7 +354,7 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
 
 
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, labels, num_labels,
-                 use_one_hot_embeddings):
+                 use_one_hot_embeddings, batch_size):
 
     flat_input_ids = tf.reshape(input_ids, [-1, input_ids.shape[-1]])
     flat_input_mask = tf.reshape(input_mask, [-1, input_mask.shape[-1]])
@@ -370,8 +370,6 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
     )
 
     output_layer = model.get_pooled_output()
-
-    batch_size = int(output_layer.shape[0].value/num_labels)
 
     with tf.variable_scope("loss"):
         if is_training:
@@ -410,9 +408,17 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
+        if is_training:
+            batch_size = FLAGS.train_batch_size
+        elif mode == tf.estimator.ModeKeys.EVAL:
+            batch_size = FLAGS.eval_batch_size
+        else:
+            batch_size = FLAGS.predict_batch_size
+
+
         (total_loss, per_example_loss, logits, probabilities) = create_model(
             bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
-            num_labels, use_one_hot_embeddings)
+            num_labels, use_one_hot_embeddings, batch_size)
 
         tvars = tf.trainable_variables()
         initialized_variable_names = {}
