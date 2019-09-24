@@ -241,7 +241,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
     """Converts a single `RaceExample` into a single `InputFeatures`."""
 
     if isinstance(example, PaddingInputExample):
-        return InputFeatures(
+        return InputFeature(
             input_ids=[0] * max_seq_length,
             input_mask=[0] * max_seq_length,
             segment_ids=[0] * max_seq_length,
