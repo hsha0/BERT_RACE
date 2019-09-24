@@ -178,7 +178,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         tokens_option = tokenizer.tokenize(option)
 
         max_article_length = max_seq_length - len(tokens_question) - len(tokens_option) - 4
-        tokens_article = tokens_article[:max_article_length]
+        tokens_article_temp = tokens_article[:max_article_length]
 
         # The convention in BERT is:
         # (a) For sequence pairs:
@@ -203,7 +203,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         segment_ids = []
         tokens.append("[CLS]")
         segment_ids.append(0)
-        for token in tokens_article:
+        for token in tokens_article_temp:
             tokens.append(token)
             segment_ids.append(0)
         tokens.append("[SEP]")
@@ -240,7 +240,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         label_id = label_map[example.label]
         if ex_index < 2:
             tf.logging.info("*** Example ***")
-            tf.logging.info("id: $s".format(example.id))
+            tf.logging.info("id: %s".format(example.id))
             tf.logging.info("tokens: %s" % " ".join(
                 [tokenization.printable_text(x) for x in tokens]))
             tf.logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
