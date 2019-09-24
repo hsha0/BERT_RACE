@@ -272,7 +272,8 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
 
 def create_model(bert_config, is_training, four_options, labels, num_labels,
                  use_one_hot_embeddings):
-    linear_outputs = []
+
+    CLSs = []
     for i in range(4):
         input_ids = four_options[0][i]
         input_mask = four_options[1][i]
@@ -287,15 +288,12 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
             use_one_hot_embeddings=use_one_hot_embeddings)
 
         output_layer = model.get_pooled_output()
+        CLSs.append(output_layer)
 
-        linear_output = tf.layers.dense(output_layer, 1, activation=None)
-        print('linear output:', linear_output.shape)
-        linear_outputs.append(linear_output)
-
-
-    linear_outputs = tf.stack(linear_outputs)
-    print('linear outputs:', linear_outputs.shape)
-    output_layer = tf.layers.dense(linear_outputs, num_labels, activation=tf.tanh)
+    CLSs = tf.stack(CLSs)
+    output_layer = tf.layers.dense(CLSs, num_labels, activation=tf.tanh)
+    batch_size = output_layer[1]
+    hidden_size = output_layer[2]
     print('output_layer shape:', output_layer.shape)
 
     output_weights = tf.get_variable(
@@ -304,6 +302,9 @@ def create_model(bert_config, is_training, four_options, labels, num_labels,
 
     output_bias = tf.get_variable(
         "output_bias", [num_labels], initializer=tf.zeros_initializer())
+
+    output_layer_matrix = tf.reshape(output_layer,
+                                     [batch_size * num_labels, hidden_size])
 
     with tf.variable_scope("loss"):
         if is_training:
