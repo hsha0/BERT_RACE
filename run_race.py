@@ -300,7 +300,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         label_id = label_map[example.label]
         if ex_index < 2:
             tf.logging.info("*** Example ***")
-            tf.logging.info("id: %s".format(example.id))
+            tf.logging.info("id: %s" % example.id)
             tf.logging.info("tokens: %s" % " ".join(
                 [tokenization.printable_text(x) for x in tokens]))
             tf.logging.info("input_ids: %s" % " ".join([str(x) for x in input_ids]))
