@@ -4,7 +4,6 @@ from __future__ import absolute_import
 from __future__ import division
 from __future__ import print_function
 
-import collections
 import os
 import modeling
 import optimization
@@ -28,6 +27,8 @@ flags.DEFINE_string(
     "bert_config_file", None,
     "The config json file corresponding to the pre-trained BERT model. "
     "This specifies the model architecture.")
+
+flags.DEFINE_string("task_name", None, "The name of the task to train.")
 
 flags.DEFINE_string("vocab_file", None,
                     "The vocabulary file that the BERT model was trained on.")
@@ -60,7 +61,7 @@ flags.DEFINE_bool(
     "do_predict", False,
     "Whether to run the model in inference mode on the test set.")
 
-flags.DEFINE_integer("train_batch_size", 16, "Total batch size for training.")
+flags.DEFINE_integer("train_batch_size", 32, "Total batch size for training.")
 
 flags.DEFINE_integer("eval_batch_size", 8, "Total batch size for eval.")
 
@@ -83,6 +84,24 @@ flags.DEFINE_integer("iterations_per_loop", 1000,
                      "How many steps to make in each estimator call.")
 
 flags.DEFINE_bool("use_tpu", False, "Whether to use TPU or GPU/CPU.")
+
+tf.flags.DEFINE_string(
+    "tpu_name", None,
+    "The Cloud TPU to use for training. This should be either the name "
+    "used when creating the Cloud TPU, or a grpc://ip.address.of.tpu:8470 "
+    "url.")
+
+tf.flags.DEFINE_string(
+    "tpu_zone", None,
+    "[Optional] GCE zone where the Cloud TPU is located in. If not "
+    "specified, we will attempt to automatically detect the GCE project from "
+    "metadata.")
+
+tf.flags.DEFINE_string(
+    "gcp_project", None,
+    "[Optional] Project name for the Cloud TPU-enabled project. If not "
+    "specified, we will attempt to automatically detect the GCE project from "
+    "metadata.")
 
 tf.flags.DEFINE_string("master", None, "[Optional] TensorFlow master URL.")
 
@@ -118,9 +137,11 @@ class InputFeature(object):
 
     def __init__(self,
                  four_options,
-                 label_id):
+                 label_id,
+                 is_real_example=True):
         self.four_options = four_options
         self.label_id = label_id
+        self.is_real_example = is_real_example
 
 
 class Option(object):
@@ -133,31 +154,32 @@ class Option(object):
         self.input_mask = input_mask
         self.segment_ids = segment_ids
 
+
 class PaddingInputExample(object):
-  """Fake example so the num input examples is a multiple of the batch size.
+    """Fake example so the num input examples is a multiple of the batch size.
 
-  When running eval/predict on the TPU, we need to pad the number of examples
-  to be a multiple of the batch size, because the TPU requires a fixed batch
-  size. The alternative is to drop the last batch, which is bad because it means
-  the entire output data won't be generated.
+    When running eval/predict on the TPU, we need to pad the number of examples
+    to be a multiple of the batch size, because the TPU requires a fixed batch
+    size. The alternative is to drop the last batch, which is bad because it means
+    the entire output data won't be generated.
 
-  We use this class instead of `None` because treating `None` as padding
-  battches could cause silent errors.
-  """
+    We use this class instead of `None` because treating `None` as padding
+    battches could cause silent errors.
+    """
 
 
-def create_train_examples(data_dir):
-    data_dir = data_dir+'/train/middle'
+def create_examples(data_dir, mode):
+    data_dir = data_dir+'/' + mode + '/'+FLAGS.task_name
+
     def _read_race_examples(filename):
-        examples = []
+        examples_one_file = []
         with open(filename) as json_file:
             instance = json.load(json_file)
             for i in range(len(instance['answers'])):
-                example = RaceExample(instance['id'] + '_' + str(i), instance['article'], instance['questions'][i],
-                                      instance['options'][i], instance['answers'][i])
-                # print_example(example)
-                examples.append(example)
-        return examples
+                example = RaceExample(id=instance['id'] + '_' + str(i), article=instance['article'], question=instance['questions'][i],
+                                      four_options=instance['options'][i], label=instance['answers'][i])
+                examples_one_file.append(example)
+        return examples_one_file
 
     if not os.path.exists(data_dir):
         sys.exit(data_dir + " doesn't exist.")
@@ -170,60 +192,6 @@ def create_train_examples(data_dir):
     os.chdir(pre_dir)
 
     return examples
-
-
-def create_dev_examples(data_dir):
-    data_dir = data_dir + '/dev/middle'
-
-    def _read_race_examples(filename):
-        examples = []
-        with open(filename) as json_file:
-            instance = json.load(json_file)
-            for i in range(len(instance['answers'])):
-                example = RaceExample(instance['id'] + '_' + str(i), instance['article'], instance['questions'][i],
-                                      instance['options'][i], instance['answers'][i])
-                # print_example(example)
-                examples.append(example)
-        return examples
-
-    if not os.path.exists(data_dir):
-        sys.exit(data_dir + " doesn't exist.")
-    pre_dir = os.getcwd()
-    os.chdir(data_dir)
-    file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
-    examples = []
-    for file in file_list:
-        examples.extend(_read_race_examples(file))
-    os.chdir(pre_dir)
-
-    return examples
-
-def create_eval_examples(data_dir):
-    data_dir = data_dir + '/test/middle'
-
-    def _read_race_examples(filename):
-        examples = []
-        with open(filename) as json_file:
-            instance = json.load(json_file)
-            for i in range(len(instance['answers'])):
-                example = RaceExample(instance['id'] + '_' + str(i), instance['article'], instance['questions'][i],
-                                      instance['options'][i], instance['answers'][i])
-                # print_example(example)
-                examples.append(example)
-        return examples
-
-    if not os.path.exists(data_dir):
-        sys.exit(data_dir + " doesn't exist.")
-    pre_dir = os.getcwd()
-    os.chdir(data_dir)
-    file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
-    examples = []
-    for file in file_list:
-        examples.extend(_read_race_examples(file))
-    os.chdir(pre_dir)
-
-    return examples
-
 
 
 def show_example(example):
@@ -247,8 +215,9 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
                             input_mask=[0] * max_seq_length,
                             segment_ids=[0] * max_seq_length)
             four_options.append(option)
-        return InputFeature(four_options = four_options,
-                            label_id=0)
+        return InputFeature(four_options=four_options,
+                            label_id=0,
+                            is_real_example=False)
 
     label_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
 
@@ -335,9 +304,9 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
 
     feature = InputFeature(
         four_options=four_options,
-        label_id=label_id
+        label_id=label_id,
+        is_real_example=True
     )
-
     return feature
 
 
@@ -351,6 +320,60 @@ def convert_examples_to_features(examples, label_list, max_seq_length, tokenizer
                                          max_seq_length, tokenizer)
         features.append(feature)
     return features
+
+
+def input_fn_builder(features, seq_length, is_training, drop_remainder):
+    """Creates an `input_fn` closure to be passed to Estimator."""
+
+    all_input_ids = []
+    all_input_mask = []
+    all_segment_ids = []
+    all_label_ids = []
+    all_is_real_example = []
+
+    for feature in features:
+        input_ids = []
+        input_mask = []
+        segment_ids = []
+        for option in feature.four_options:
+            input_ids.append(option.input_ids)
+            input_mask.append(option.input_mask)
+            segment_ids.append(option.segment_ids)
+        all_input_ids.append(input_ids)
+        all_input_mask.append(input_mask)
+        all_segment_ids.append(segment_ids)
+        all_label_ids.append(feature.label_id)
+        all_is_real_example.append(feature.is_real_example)
+
+    def input_fn(params):
+        """The actual input function."""
+        batch_size = params["batch_size"]
+
+        num_examples = len(features)
+
+        d = tf.data.Dataset.from_tensor_slices({
+            "input_ids":
+                tf.constant(
+                    all_input_ids, shape=[num_examples, 4, seq_length]
+                ),
+            "input_mask":
+                tf.constant(all_input_mask, shape=[num_examples, 4, seq_length]),
+            "segment_ids":
+                tf.constant(all_segment_ids, shape=[num_examples, 4, seq_length]),
+            "label_ids":
+                tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
+            "is_real_example":
+                tf.constant(all_is_real_example, shape=[num_examples], dtype=tf.int32),
+        })
+
+        if is_training:
+            d = d.repeat()
+            d = d.shuffle(buffer_size=100)
+
+        d = d.batch(batch_size=batch_size, drop_remainder=drop_remainder)
+        return d
+
+    return input_fn
 
 
 def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, labels, num_labels,
@@ -389,13 +412,13 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
     return (loss, per_example_loss, logits, probabilities)
 
 
-
 def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
-                     num_train_steps, num_warmup_steps, use_tpu, use_one_hot_embeddings):
-    """Return `model_fn` closure for Estimator."""
+                     num_train_steps, num_warmup_steps, use_tpu,
+                     use_one_hot_embeddings):
+    """Returns `model_fn` closure for TPUEstimator."""
 
     def model_fn(features, labels, mode, params):
-        """The model_fn` for Estimator`"""
+        """The `model_fn` for TPUEstimator."""
 
         tf.logging.info("*** Features ***")
         for name in sorted(features.keys()):
@@ -405,20 +428,17 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         input_mask = features["input_mask"]
         segment_ids = features["segment_ids"]
         label_ids = features["label_ids"]
+        is_real_example = None
+        if "is_real_example" in features:
+            is_real_example = tf.cast(features["is_real_example"], dtype=tf.float32)
+        else:
+            is_real_example = tf.ones(tf.shape(label_ids), dtype=tf.float32)
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
-        if is_training:
-            batch_size = FLAGS.train_batch_size
-        elif mode == tf.estimator.ModeKeys.EVAL:
-            batch_size = FLAGS.eval_batch_size
-        else:
-            batch_size = FLAGS.predict_batch_size
-
-
         (total_loss, per_example_loss, logits, probabilities) = create_model(
             bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
-            num_labels, use_one_hot_embeddings, batch_size)
+            num_labels, use_one_hot_embeddings)
 
         tvars = tf.trainable_variables()
         initialized_variable_names = {}
@@ -426,7 +446,15 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         if init_checkpoint:
             (assignment_map, initialized_variable_names
              ) = modeling.get_assignment_map_from_checkpoint(tvars, init_checkpoint)
-            tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+            if use_tpu:
+
+                def tpu_scaffold():
+                    tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
+                    return tf.train.Scaffold()
+
+                scaffold_fn = tpu_scaffold
+            else:
+                tf.train.init_from_checkpoint(init_checkpoint, assignment_map)
 
         tf.logging.info("**** Trainable Variables ****")
         for var in tvars:
@@ -435,6 +463,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 init_string = ", *INIT_FROM_CKPT*"
             tf.logging.info("  name = %s, shape = %s%s", var.name, var.shape,
                             init_string)
+
         output_spec = None
         if mode == tf.estimator.ModeKeys.TRAIN:
             train_op = optimization.create_optimizer(
@@ -459,69 +488,17 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 }
 
             eval_metrics = (metric_fn,
-                            [per_example_loss, label_ids, logits])
+                            [per_example_loss, label_ids, logits, is_real_example])
             output_spec = tf.contrib.tpu.TPUEstimatorSpec(
                 mode=mode,
                 loss=total_loss,
                 eval_metrics=eval_metrics,
                 scaffold_fn=scaffold_fn)
         else:
-            output_spec = tf.contrib.tpu.TPUEstimatorSpec(
-                mode=mode,
-                predictions={"probabilities": probabilities},
-                scaffold_fn=scaffold_fn)
+            pass
         return output_spec
 
     return model_fn
-
-
-def input_fn_builder(features, seq_length, is_training, drop_remainder):
-    """Creates an `input_fn` closure to be passed to Estimator."""
-
-    all_input_ids = []
-    all_input_mask = []
-    all_segment_ids = []
-    all_label_ids = []
-
-    for feature in features:
-        input_ids = []
-        input_mask = []
-        segment_ids = []
-        for option in feature.four_options:
-            input_ids.append(option.input_ids)
-            input_mask.append(option.input_mask)
-            segment_ids.append(option.segment_ids)
-        all_input_ids.append(input_ids)
-        all_input_mask.append(input_mask)
-        all_segment_ids.append(segment_ids)
-
-    def input_fn(params):
-        """The actual input function."""
-        batch_size = params["batch_size"]
-
-        num_examples = len(features)
-
-        d = tf.data.Dataset.from_tensor_slices({
-            "input_ids":
-                tf.constant(
-                    all_input_ids, shape=[num_examples, 4, seq_length]
-                ),
-            "input_mask":
-                tf.constant(all_input_mask, shape=[num_examples, 4, seq_length]),
-            "segment_ids":
-                tf.constant(all_segment_ids, shape=[num_examples, 4, seq_length]),
-            "label_ids":
-                tf.constant(all_label_ids, shape=[num_examples], dtype=tf.int32),
-        })
-
-        if is_training:
-            d = d.repeat()
-            d = d.shuffle(buffer_size=100)
-
-        d = d.batch(batch_size=batch_size, drop_remainder=drop_remainder)
-        return d
-
-    return input_fn
 
 
 def main():
@@ -544,9 +521,18 @@ def main():
 
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
-    label_list = ['A','B','C','D']
+    task_name = FLAGS.task_name.lower()
+
+    if task_name not in ['middle', 'high']:
+        return ValueError("Task not found: %s" % (task_name))
+
+    label_list = ['A', 'B', 'C', 'D']
 
     tpu_cluster_resolver = None
+    if FLAGS.use_tpu and FLAGS.tpu_name:
+        tpu_cluster_resolver = tf.contrib.cluster_resolver.TPUClusterResolver(
+            FLAGS.tpu_name, zone=FLAGS.tpu_zone, project=FLAGS.gcp_project)
+
     is_per_host = tf.contrib.tpu.InputPipelineConfig.PER_HOST_V2
     run_config = tf.contrib.tpu.RunConfig(
         cluster=tpu_cluster_resolver,
@@ -562,7 +548,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_train_examples(FLAGS.data_dir)
+        train_examples = create_examples(FLAGS.data_dir, 'train')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
@@ -601,12 +587,16 @@ def main():
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
     if FLAGS.do_eval:
-
-        eval_examples = create_dev_examples(FLAGS.data_dir)
+        eval_examples = processor.get_dev_examples(FLAGS.data_dir)
         num_actual_eval_examples = len(eval_examples)
-
-        while len(eval_examples) % FLAGS.eval_batch_size != 0:
-            eval_examples.append(PaddingInputExample())
+        if FLAGS.use_tpu:
+            # TPU requires a fixed batch size for all batches, therefore the number
+            # of examples must be a multiple of the batch size, or else examples
+            # will get dropped. So we pad with fake examples which are ignored
+            # later on. These do NOT count towards the metric (all tf.metrics
+            # support a per-instance weight, and these get a weight of 0.0).
+            while len(eval_examples) % FLAGS.eval_batch_size != 0:
+                eval_examples.append(PaddingInputExample())
 
         eval_features = convert_examples_to_features(
             eval_examples, label_list, FLAGS.max_seq_length, tokenizer)
@@ -644,7 +634,15 @@ def main():
 
 if __name__ == '__main__':
     flags.mark_flag_as_required("data_dir")
+    flags.mark_flag_as_required("task_name")
     flags.mark_flag_as_required("vocab_file")
     flags.mark_flag_as_required("bert_config_file")
     flags.mark_flag_as_required("output_dir")
     main()
+
+
+
+
+
+
+
