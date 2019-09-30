@@ -188,6 +188,7 @@ def create_examples(data_dir, mode):
     cur_dir = os.getcwd()
     print(cur_dir)
     file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
+    print(file_list)
     examples = []
     print(len(file_list))
     for file_index, file in enumerate(file_list):
