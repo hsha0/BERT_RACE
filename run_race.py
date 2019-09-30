@@ -535,7 +535,7 @@ def main():
 
     with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
         attrs = vars(FLAGS)
-        params.write('\n'.join("%s: %s" % item for item in attrs.items())
+        params.write('\n'.join("%s: %s" % item for item in attrs.items()))
 
     task_name = FLAGS.task_name.lower()
 
