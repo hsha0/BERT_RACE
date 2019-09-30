@@ -182,7 +182,7 @@ def create_examples(data_dir, mode):
                 examples_one_file.append(example)
         return examples_one_file
 
-    file_list = sorted(tf.gfile.glob('*.txt'), key = lambda x: int(x[:-4]))
+    file_list = sorted(tf.io.gfile.glob('*.txt'), key = lambda x: int(x[:-4]))
     examples = []
     for file_index, file in enumerate(file_list):
         if file_index / 10000 == 0:
