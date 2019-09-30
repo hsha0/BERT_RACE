@@ -393,11 +393,13 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
     )
 
     output_layer = model.get_pooled_output()
+    print(output_layer.shape)
 
     with tf.variable_scope("loss"):
         if is_training:
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
         logits = tf.layers.dense(output_layer, 1, activation=None)
+        print(logits.shape)
         logits = tf.reshape(logits, [batch_size, num_labels])
         probabilities = tf.nn.softmax(logits, axis=-1)
         print(probabilities.shape)
