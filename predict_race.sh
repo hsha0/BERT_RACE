@@ -22,4 +22,4 @@ python3 run_race.py \
  --learning_rate=5e-5 \
  --num_train_epochs=3.0 \
  --use_tpu=True \
- --tpu_name='grpc://10.109.36.98:8470'
+ --tpu_name='grpc://10.88.127.98:8470'
