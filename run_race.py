@@ -513,7 +513,10 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 eval_metrics=eval_metrics,
                 scaffold_fn=scaffold_fn)
         else:
-            pass
+            output_spec = tf.contrib.tpu.TPUEstimatorSpec(
+                mode=mode,
+                predictions={"probabilities": probabilities},
+                scaffold_fn=scaffold_fn)
         return output_spec
 
     return model_fn
