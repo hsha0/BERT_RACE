@@ -17,7 +17,7 @@ python3 run_race.py \
  --bert_config_file=$BERT_GC/bert_config.json \
  --init_checkpoint=$BERT_GC/bert_model.ckpt \
  --max_seq_length=384 \
- --train_batch_size=32 \
+ --train_batch_size=128 \
  --eval_batch_size=8 \
  --learning_rate=5e-5 \
  --num_train_epochs=3.0 \
