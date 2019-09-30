@@ -400,9 +400,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
         logits = tf.layers.dense(output_layer, 1, activation=None)
         logits = tf.reshape(logits, [1, num_labels])
         probabilities = tf.nn.softmax(logits, axis=-1)
-        print(probabilities.shape)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
-        print(log_probs.shape)
 
         one_hot_labels = tf.one_hot(labels, depth=num_labels, dtype=tf.float32)
 
