@@ -541,6 +541,7 @@ def main():
 
     with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
         params.write("Data set: " + str(FLAGS.data_dir) + "\n")
+        params.write("Task name: " + str(FLAGS.task_name) + "\n")
         params.write("Bert model: " + str(FLAGS.bert_config_file) + "\n")
         params.write("Lower case: " + str(FLAGS.do_lower_case) + "\n")
         params.write("Max seq length: " + str(FLAGS.max_seq_length) + "\n")
