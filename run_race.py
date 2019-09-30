@@ -185,6 +185,7 @@ def create_examples(data_dir, mode):
     file_list = sorted(tf.io.gfile.listdir(data_dir), key = lambda x: int(x[:-4]))
     examples = []
     for file_index, file in enumerate(file_list):
+        print(file_index)
         if file_index / 10000 == 0:
             print("Create examples: " + str(file_index))
         examples.extend(_read_race_examples(data_dir + '/'+file))
