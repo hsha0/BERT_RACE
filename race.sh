@@ -9,7 +9,7 @@ DATA_PATH='/content/RACE'
 python3 run_race.py \
  --data_dir=$DATA_PATH \
  --do_lower_case=True \
- --output_dir=gs://bert_sh/$1_$current_time \
+ --output_dir=gs://bert_sh/RACE_$current_time \
  --do_train=True \
  --do_eval=True \
  --task_name=middle \
@@ -17,8 +17,8 @@ python3 run_race.py \
  --bert_config_file=$BERT_GC/bert_config.json \
  --init_checkpoint=$BERT_GC/bert_model.ckpt \
  --max_seq_length=384 \
- --train_batch_size=64 \
- --eval_batch_size=64 \
+ --train_batch_size=32 \
+ --eval_batch_size=8 \
  --learning_rate=5e-5 \
  --num_train_epochs=3.0 \
  --use_tpu=True \
