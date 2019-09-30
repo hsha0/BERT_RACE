@@ -1,12 +1,13 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 
+current_time=$(date "+%Y_%m_%d-%H_%M_%S")
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
 BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
 python3 run_race.py \
  --data_dir=$1 \
  --do_lower_case=True \
- --output_dir=gs://bert_sh/$1_ckpt \
+ --output_dir=gs://bert_sh/$1_$current_time \
  --do_train=True \
  --do_eval=True \
  --task_name=middle \
@@ -16,7 +17,7 @@ python3 run_race.py \
  --max_seq_length=384 \
  --train_batch_size=64 \
  --eval_batch_size=64 \
- --learning_rate=2e-5 \
- --num_train_epochs=6.0 \
+ --learning_rate=5e-5 \
+ --num_train_epochs=3.0 \
  --use_tpu=True \
- --tpu_name='grpc://10.28.33.250:8470'
+ --tpu_name='grpc://10.95.165.58:8470'
