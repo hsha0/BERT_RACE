@@ -187,7 +187,9 @@ def create_examples(data_dir, mode):
     os.chdir(data_dir)
     file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
     examples = []
-    for file in file_list:
+    for file_index, file in enumerate(file_list):
+        if file_index / 1000 == 0:
+            print("Create examples: " + str(file_index))
         examples.extend(_read_race_examples(file))
     os.chdir(pre_dir)
 
@@ -547,7 +549,6 @@ def main():
         params.write("Learning rate: " + str(FLAGS.learning_rate) + "\n")
         params.write("Num train epochs: " + str(FLAGS.num_train_epochs) + "\n")
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
-
 
     task_name = FLAGS.task_name.lower()
 
