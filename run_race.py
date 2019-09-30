@@ -185,6 +185,8 @@ def create_examples(data_dir, mode):
         sys.exit(data_dir + " doesn't exist.")
     pre_dir = os.getcwd()
     os.chdir(data_dir)
+    cur_dir = os.getcwd()
+    print(cur_dir)
     file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
     examples = []
     print(len(file_list))
