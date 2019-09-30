@@ -667,7 +667,7 @@ def main():
 
     if FLAGS.do_predict:
         predict_examples = create_examples(FLAGS.data_dir, 'test')
-        num_actual_predict_examples = len(predict_example)
+        num_actual_predict_examples = len(predict_examples)
 
         if FLAGS.use_tpu:
             # TPU requires a fixed batch size for all batches, therefore the number
