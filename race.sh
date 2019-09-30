@@ -12,7 +12,7 @@ python3 run_race.py \
  --task_name=middle \
  --vocab_file=$BERT_BASE_DIR/vocab.txt \
  --bert_config_file=$BERT_BASE_DIR/bert_config.json \
- --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt.data-00000-of-00001 \
+ --init_checkpoint=$BERT_BASE_DIR/bert_model.ckpt \
  --max_seq_length=384 \
  --train_batch_size=8 \
  --eval_batch_size=8 \
