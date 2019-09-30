@@ -17,6 +17,6 @@ python3 run_race.py \
  --train_batch_size=64 \
  --eval_batch_size=64 \
  --learning_rate=2e-5 \
- --num_train_epochs=3.0 \
+ --num_train_epochs=6.0 \
  --use_tpu=True \
  --tpu_name='grpc://10.28.33.250:8470'
