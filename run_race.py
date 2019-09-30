@@ -534,8 +534,8 @@ def main():
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
     with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
-        for name in FLAGS.__dict__:
-            params.write(name + ': ' + FLAGS.__dict__[name])
+        attrs = vars(FLAGS)
+        params.write('\n'.join("%s: %s" % item for item in attrs.items())
 
     task_name = FLAGS.task_name.lower()
 
