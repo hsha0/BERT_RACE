@@ -187,7 +187,7 @@ def create_examples(data_dir, mode):
     for file_index, file in enumerate(file_list):
         if file_index / 10000 == 0:
             print("Create examples: " + str(file_index))
-        examples.extend(_read_race_examples(file))
+        examples.extend(_read_race_examples(data_dir + '/'+file))
 
     return examples
 
