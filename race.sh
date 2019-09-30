@@ -1,8 +1,8 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 
-BERT_BASE_DIR='gs://bert-254500/BERT_BASE/uncased_L-12_H-768_A-12'
-
+BERT_BASE_DIR='BERT_BASE'
+BERT_GC = 'gs://bert-254500/BERT_BASE/uncased_L-12_H-768_A-12'
 python3 run_race.py \
  --data_dir=$1 \
  --do_lower_case=True \
