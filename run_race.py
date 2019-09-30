@@ -173,8 +173,7 @@ def create_examples(data_dir, mode):
 
     def _read_race_examples(filename):
         examples_one_file = []
-        with tf.gfile.GFile(filename) as json_file:
-        #with open(filename) as json_file:
+        with open(filename) as json_file:
             instance = json.load(json_file)
             for i in range(len(instance['answers'])):
                 example = RaceExample(id=instance['id'] + '_' + str(i), article=instance['article'], question=instance['questions'][i],
@@ -182,13 +181,17 @@ def create_examples(data_dir, mode):
                 examples_one_file.append(example)
         return examples_one_file
 
-    file_list = sorted(tf.io.gfile.listdir(data_dir), key = lambda x: int(x[:-4]))
+    if not os.path.exists(data_dir):
+        sys.exit(data_dir + " doesn't exist.")
+    pre_dir = os.getcwd()
+    os.chdir(data_dir)
+    file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
     examples = []
     for file_index, file in enumerate(file_list):
-        print(file_index)
         if file_index / 10000 == 0:
-            print("Create examples: " + str(file_index))
-        examples.extend(_read_race_examples(data_dir + '/'+file))
+            print("Create examples:", file_index)
+        examples.extend(_read_race_examples(file))
+    os.chdir(pre_dir)
 
     return examples
 
