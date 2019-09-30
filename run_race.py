@@ -188,7 +188,7 @@ def create_examples(data_dir, mode):
     file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
     examples = []
     for file_index, file in enumerate(file_list):
-        if file_index / 10000 == 0:
+        if file_index / 1000 == 0:
             print("Create examples:", file_index)
         examples.extend(_read_race_examples(file))
     os.chdir(pre_dir)
@@ -291,7 +291,7 @@ def convert_single_example(ex_index, example, label_list, max_seq_length,
         assert len(segment_ids) == max_seq_length
 
         label_id = label_map[example.label]
-        if ex_index < 2:
+        if ex_index < 1:
             tf.logging.info("*** Example ***")
             tf.logging.info("id: %s" % example.id)
             tf.logging.info("tokens: %s" % " ".join(
@@ -535,6 +535,21 @@ def main():
 
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
+    with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
+        params.write("Data set: " + str(FLAGS.data_dir) + "\n")
+        params.write("Bert model: " + str(FLAGS.bert_config_file) + "\n")
+        params.write("Lower case: " + str(FLAGS.do_lower_case) + "\n")
+        params.write("Max seq length: " + str(FLAGS.max_seq_length) + "\n")
+        params.write("Do train: " + str(FLAGS.do_train) + "\n")
+        params.write("Do eval: " + str(FLAGS.do_eval) + "\n")
+        params.write("Do predict: " + str(FLAGS.do_predict) + "\n")
+        params.write("Train batch size: " + str(FLAGS.train_batch_size) + "\n")
+        params.write("Eval batch size: " + str(FLAGS.eval_batch_size) + "\n")
+        params.write("Predict batch size: " + str(FLAGS.predict_batch_size) + "\n")
+        params.write("Learning rate: " + str(FLAGS.learning_rate) + "\n")
+        params.write("Num train epochs: " + str(FLAGS.num_train_epochs) + "\n")
+        params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
+
     task_name = FLAGS.task_name.lower()
 
     if task_name not in ['middle', 'high']:
@@ -645,20 +660,50 @@ def main():
                 tf.logging.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
-        with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
-            params.write("Data set: " + str(FLAGS.data_dir) + "\n")
-            params.write("Bert model: " + str(FLAGS.bert_config_file) + "\n")
-            params.write("Lower case: " + str(FLAGS.do_lower_case) + "\n")
-            params.write("Max seq length: " + str(FLAGS.max_seq_length) + "\n")
-            params.write("Do train: " + str(FLAGS.do_train) + "\n")
-            params.write("Do eval: " + str(FLAGS.do_eval) + "\n")
-            params.write("Do predict: " + str(FLAGS.do_predict) + "\n")
-            params.write("Train batch size: " + str(FLAGS.train_batch_size) + "\n")
-            params.write("Eval batch size: " + str(FLAGS.eval_batch_size) + "\n")
-            params.write("Predict batch size: " + str(FLAGS.predict_batch_size) + "\n")
-            params.write("Learning rate: " + str(FLAGS.learning_rate) + "\n")
-            params.write("Num train epochs: " + str(FLAGS.num_train_epochs) + "\n")
-            params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
+    if FLAGS.do_predict:
+        predict_examples = create_examples(FLAGS.data_dir, 'test')
+        num_actual_predict_examples = len(predict_example)
+
+        if FLAGS.use_tpu:
+            # TPU requires a fixed batch size for all batches, therefore the number
+            # of examples must be a multiple of the batch size, or else examples
+            # will get dropped. So we pad with fake examples which are ignored
+            # later on.
+            while len(predict_examples) % FLAGS.predict_batch_size != 0:
+                predict_examples.append(PaddingInputExample())
+
+        predict_features = convert_examples_to_features(
+            predict_examples, label_list, FLAGS.max_seq_length, tokenizer)
+
+        tf.logging.info("***** Running prediction*****")
+        tf.logging.info("  Num examples = %d (%d actual, %d padding)",
+                        len(predict_examples), num_actual_predict_examples,
+                        len(predict_examples) - num_actual_predict_examples)
+        tf.logging.info("  Batch size = %d", FLAGS.predict_batch_size)
+
+        predict_drop_remainder = True if FLAGS.use_tpu else False
+        predict_input_fn = input_fn_builder(
+            features=predict_features,
+            seq_length=FLAGS.max_seq_length,
+            is_training=False,
+            drop_remainder=predict_drop_remainder)
+
+        result = estimator.predict(input_fn=predict_input_fn)
+
+        output_predict_file = os.path.join(FLAGS.output_dir, "test_results.tsv")
+        with tf.gfile.GFile(output_predict_file, "w") as writer:
+            num_written_lines = 0
+            tf.logging.info("***** Predict results *****")
+            for (i, prediction) in enumerate(result):
+                probabilities = prediction["probabilities"]
+                if i >= num_actual_predict_examples:
+                    break
+                output_line = "\t".join(
+                    str(class_probability)
+                    for class_probability in probabilities) + "\n"
+                writer.write(output_line)
+                num_written_lines += 1
+        assert num_written_lines == num_actual_predict_examples
 
 
 if __name__ == '__main__':
