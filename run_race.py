@@ -436,9 +436,24 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
+        if is_training:
+            batch_size = FLAGS.train_batch_size
+        elif mode == tf.estimator.ModeKeys.EVAL:
+            batch_size = FLAGS.eval_batch_size
+        else:
+            batch_size = FLAGS.predict_batch_size
+
         (total_loss, per_example_loss, logits, probabilities) = create_model(
-            bert_config, is_training, input_ids, input_mask, segment_ids, label_ids,
-            num_labels, use_one_hot_embeddings)
+            bert_config=bert_config,
+            is_training=is_training,
+            input_ids=input_ids,
+            input_mask=input_mask,
+            segment_ids=segment_ids,
+            labels=label_ids,
+            num_labels=num_labels,
+            use_one_hot_embeddings=use_one_hot_embeddings,
+            batch_size=batch_size
+        )
 
         tvars = tf.trainable_variables()
         initialized_variable_names = {}
