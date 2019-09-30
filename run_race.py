@@ -599,7 +599,7 @@ def main():
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
     if FLAGS.do_eval:
-        eval_examples = processor.get_dev_examples(FLAGS.data_dir)
+        eval_examples = create_examples(FLAGS.data_dir, 'dev')
         num_actual_eval_examples = len(eval_examples)
         if FLAGS.use_tpu:
             # TPU requires a fixed batch size for all batches, therefore the number
