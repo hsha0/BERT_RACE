@@ -534,21 +534,6 @@ def main():
 
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
-    with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
-        params.write("Data set: " + str(FLAGS.data_dir) + "\n")
-        params.write("Bert model: " + str(FLAGS.bert_config_file)+ "\n")
-        params.write("Lower case: " + str(FLAGS.do_lower_case) + "\n")
-        params.write("Max seq length: " + str(FLAGS.max_seq_length) + "\n")
-        params.write("Do train: " + str(FLAGS.do_train) + "\n")
-        params.write("Do eval: " + str(FLAGS.do_eval) + "\n")
-        params.write("Do predict: " + str(FLAGS.do_predict) + "\n")
-        params.write("Train batch size: " + str(FLAGS.train_batch_size) + "\n")
-        params.write("Eval batch size: " + str(FLAGS.eval_batch_size) + "\n")
-        params.write("Predict batch size: " + str(FLAGS.predict_batch_size) + "\n")
-        params.write("Learning rate: " + str(FLAGS.learning_rate) + "\n")
-        params.write("Num train epochs: " + str(FLAGS.num_train_epochs) + "\n")
-        params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
-
     task_name = FLAGS.task_name.lower()
 
     if task_name not in ['middle', 'high']:
@@ -658,6 +643,21 @@ def main():
             for key in sorted(result.keys()):
                 tf.logging.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
+
+        with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
+            params.write("Data set: " + str(FLAGS.data_dir) + "\n")
+            params.write("Bert model: " + str(FLAGS.bert_config_file) + "\n")
+            params.write("Lower case: " + str(FLAGS.do_lower_case) + "\n")
+            params.write("Max seq length: " + str(FLAGS.max_seq_length) + "\n")
+            params.write("Do train: " + str(FLAGS.do_train) + "\n")
+            params.write("Do eval: " + str(FLAGS.do_eval) + "\n")
+            params.write("Do predict: " + str(FLAGS.do_predict) + "\n")
+            params.write("Train batch size: " + str(FLAGS.train_batch_size) + "\n")
+            params.write("Eval batch size: " + str(FLAGS.eval_batch_size) + "\n")
+            params.write("Predict batch size: " + str(FLAGS.predict_batch_size) + "\n")
+            params.write("Learning rate: " + str(FLAGS.learning_rate) + "\n")
+            params.write("Num train epochs: " + str(FLAGS.num_train_epochs) + "\n")
+            params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
 
 
 if __name__ == '__main__':
