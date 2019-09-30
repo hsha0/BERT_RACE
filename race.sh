@@ -4,7 +4,7 @@
 current_time=$(date "+%Y_%m_%d-%H_%M_%S")
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
 BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
-DATA_PATH='RACE'
+DATA_PATH='gs://bert_sh/RACE'
 
 python3 run_race.py \
  --data_dir=$DATA_PATH \
