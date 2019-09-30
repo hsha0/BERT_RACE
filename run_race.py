@@ -187,6 +187,7 @@ def create_examples(data_dir, mode):
     os.chdir(data_dir)
     file_list = sorted(glob.glob('*.txt'), key=lambda x: int(x[:-4]))
     examples = []
+    print(len(file_list))
     for file_index, file in enumerate(file_list):
         if file_index / 100 == 0:
             print("Create examples:", file_index)
