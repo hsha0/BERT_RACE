@@ -533,7 +533,7 @@ def main():
 
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
-    with open(FLAGS.output_dir + '/params.txt', 'w') as params:
+    with open(FLAGS.output_dir + '/params.txt', 'w+') as params:
         for name in FLAGS.__dict__:
             params.write(name + ': ' + FLAGS.__dict__[name])
 
