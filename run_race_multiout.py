@@ -37,7 +37,11 @@ flags.DEFINE_string(
     "output_dir", None,
     "The output directory where the model checkpoints will be written.")
 
+
 ## Other parameters
+flags.DEFINE_integer(
+    "seed", 12345, "Random seed.")
+
 flags.DEFINE_string(
     "init_checkpoint", None,
     "Initial checkpoint (usually from a pre-trained BERT model).")
@@ -374,7 +378,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
 
         if is_training:
             d = d.repeat()
-            d = d.shuffle(buffer_size=100)
+            d = d.shuffle(buffer_size=100, seed=FLAGS.seed)
 
         d = d.batch(batch_size=batch_size, drop_remainder=drop_remainder)
         return d
@@ -544,6 +548,7 @@ def main():
     tf.gfile.MakeDirs(FLAGS.output_dir)
 
     with tf.gfile.GFile(FLAGS.output_dir + "/params.txt", "w+") as params:
+        params.write("Seed: " + str(FLAGS.seed) + "\n")
         params.write("Data set: " + str(FLAGS.data_dir) + "\n")
         params.write("Task name: " + str(FLAGS.task_name) + "\n")
         params.write("Bert model: " + str(FLAGS.bert_config_file) + "\n")
