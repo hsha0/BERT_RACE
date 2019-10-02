@@ -408,10 +408,9 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, l
         if is_training:
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
         output_layer = tf.layers.flatten(output_layer)
-        print(output_layer.shape)
-        logits = tf.layers.dense(output_layer, 3072, activation=tf.nn.tanh)
+        logits = tf.layers.dense(output_layer, 192, activation=None)
         print(logits.shape)
-        logits = tf.layers.dense(logits, batch_size//8*4, activation=None)
+        logits = tf.layers.dense(output_layer, 1, activation=None)
         print(logits.shape)
         logits = tf.reshape(logits, [batch_size//8, num_labels])
         print(logits.shape)
