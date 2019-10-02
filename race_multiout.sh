@@ -4,7 +4,7 @@
 current_time=$(date "+%Y_%m_%d-%H_%M_%S")
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
 BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
-DATA_PATH='/content/RACE'
+DATA_PATH='/content/RACE_S'
 
 python3 run_race_multiout.py \
  --data_dir=$DATA_PATH \
