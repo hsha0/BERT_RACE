@@ -17,9 +17,9 @@ python3 run_race.py \
  --bert_config_file=$BERT_GC/bert_config.json \
  --init_checkpoint=$BERT_GC/bert_model.ckpt \
  --max_seq_length=384 \
- --train_batch_size=64 \
+ --train_batch_size=32 \
  --eval_batch_size=8 \
  --learning_rate=5e-5 \
  --num_train_epochs=3.0 \
  --use_tpu=True \
- --tpu_name='grpc://10.25.101.162:8470'
+ --tpu_name='grpc://10.126.232.162:8470'
