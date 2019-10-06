@@ -10,7 +10,7 @@ BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
 DATA_PATH='/content/RACE'
 
 python3 run_race.py \
- --seed=SEED \
+ --seed=$SEED \
  --data_dir=$DATA_PATH \
  --do_lower_case=True \
  --output_dir=gs://bert_sh/predict_10seed/RACE_$SEED_$current_time \
