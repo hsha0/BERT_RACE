@@ -13,7 +13,7 @@ python3 run_race.py \
  --seed=$SEED \
  --data_dir=$DATA_PATH \
  --do_lower_case=True \
- --output_dir=gs://bert_sh/predict_10seed/RACE_$SEED_$current_time \
+ --output_dir=gs://bert_sh/predict_10seed/RACE_${SEED}_$current_time \
  --do_train=True \
  --do_eval=True \
  --do_predict=True \
