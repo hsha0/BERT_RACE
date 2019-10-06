@@ -14,7 +14,7 @@ python3 run_race.py \
  --output_dir=gs://bert_sh/predict_10seed/RACE_$current_time \
  --do_train=True \
  --do_eval=True \
- --do_predict=True
+ --do_predict=True \
  --task_name=middle \
  --vocab_file=$BERT_GC/vocab.txt \
  --bert_config_file=$BERT_GC/bert_config.json \
