@@ -1,7 +1,7 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 
-current_time=$(date "+%Y_%m_%d-%H_%M_%S")
+current_time=$(date "+%y%m%d-%H%M%S")
 
 SEED=15569
 
