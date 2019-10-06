@@ -559,6 +559,7 @@ def main():
         params.write("Learning rate: " + str(FLAGS.learning_rate) + "\n")
         params.write("Num train epochs: " + str(FLAGS.num_train_epochs) + "\n")
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
+        params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
     task_name = FLAGS.task_name.lower()
 
