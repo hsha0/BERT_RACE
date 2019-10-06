@@ -3,7 +3,7 @@
 
 current_time=$(date "+%y%m%d-%H%M%S")
 
-SEED=451208
+SEED=461122
 TASK_NAME='middle'
 
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
