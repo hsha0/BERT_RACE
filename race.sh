@@ -3,7 +3,8 @@
 
 current_time=$(date "+%y%m%d-%H%M%S")
 
-SEED=15569
+SEED=451208
+TASK_NAME='middle'
 
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
 BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
@@ -13,11 +14,11 @@ python3 run_race.py \
  --seed=$SEED \
  --data_dir=$DATA_PATH \
  --do_lower_case=True \
- --output_dir=gs://bert_sh/predict_10seed/RACE_${SEED}_$current_time \
+ --output_dir=gs://bert_sh/predict_10seed/RACE_${TASK_NAME}_${SEED}_$current_time \
  --do_train=True \
  --do_eval=True \
  --do_predict=True \
- --task_name=middle \
+ --task_name=$TASK_NAME \
  --vocab_file=$BERT_GC/vocab.txt \
  --bert_config_file=$BERT_GC/bert_config.json \
  --init_checkpoint=$BERT_GC/bert_model.ckpt \
