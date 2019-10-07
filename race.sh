@@ -4,7 +4,6 @@
 
 current_time=$(date "+%y%m%d-%H%M%S")
 
-SEED=''
 TPU_NAME='10.26.122.122:8470'
 TASK_NAME='middle'
 
@@ -16,6 +15,7 @@ declare -a SEEDS=(699203 332037 5591 99716 676765 785600 65274)
 
 for run in $(seq 1 7)
 do
+    SEED=${SEEDS[$run-1]}
     python3 run_race.py \
     --seed=$SEED \
     --data_dir=$DATA_PATH \
