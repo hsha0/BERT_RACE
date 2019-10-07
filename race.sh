@@ -1,15 +1,14 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 
-
-current_time=$(date "+%y%m%d-%H%M%S")
-
-TPU_NAME='10.26.122.122:8470'
+TPU_NAME='grpc://10.26.122.122:8470'
 TASK_NAME='middle'
 
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
 BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
 DATA_PATH='/content/RACE'
+
+current_time=$(date "+%y%m%d-%H%M%S")
 
 declare -a SEEDS=(699203 332037 5591 99716 676765 785600 65274)
 
