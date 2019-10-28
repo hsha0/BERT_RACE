@@ -5,6 +5,8 @@ from __future__ import print_function
 import tensorflow as tf
 import tokenization
 import modeling
+import os
+import optimization
 
 flags = tf.flags
 
@@ -204,7 +206,6 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
         input_mask.append(0)
         segment_ids.append(0)
 
-    print(len(input_ids), max_seq_length)
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
@@ -327,13 +328,13 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
         input_ids = features["input_ids"]
         input_mask = features["input_mask"]
         segment_ids = features["segment_ids"]
-        label_ids = features["label_ids"]
+        label_li = features["label_li"]
 
         is_real_example = None
         if "is_real_example" in features:
             is_real_example = tf.cast(features["is_real_example"], dtype=tf.float32)
         else:
-            is_real_example = tf.ones(tf.shape(label_ids), dtype=tf.float32)
+            is_real_example = tf.ones(tf.shape(label_li), dtype=tf.float32)
 
         is_training = (mode == tf.estimator.ModeKeys.TRAIN)
 
@@ -350,7 +351,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
             input_ids=input_ids,
             input_mask=input_mask,
             segment_ids=segment_ids,
-            labels=label_ids,
+            labels=label_li,
             num_labels=num_labels,
             use_one_hot_embeddings=use_one_hot_embeddings,
             batch_size=batch_size
@@ -392,10 +393,10 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
         elif mode == tf.estimator.ModeKeys.EVAL:
 
-            def metric_fn(per_example_loss, label_ids, logits, is_real_example):
+            def metric_fn(per_example_loss, label_li, logits, is_real_example):
                 predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
                 accuracy = tf.metrics.accuracy(
-                    labels=label_ids, predictions=predictions, weights=is_real_example)
+                    labels=label_li, predictions=predictions, weights=is_real_example)
                 loss = tf.metrics.mean(values=per_example_loss, weights=is_real_example)
                 return {
                     "eval_accuracy": accuracy,
@@ -403,7 +404,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 }
 
             eval_metrics = (metric_fn,
-                            [per_example_loss, label_ids, logits, is_real_example])
+                            [per_example_loss, label_li, logits, is_real_example])
             output_spec = tf.contrib.tpu.TPUEstimatorSpec(
                 mode=mode,
                 loss=total_loss,
