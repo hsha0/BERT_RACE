@@ -150,7 +150,9 @@ def get_labels(data_dir, mode):
                 labels.add(x)
     return labels
 
-def create_examples(data_dir, mode, max_seq_length):
+
+def create_examples(data_dir, mode):
+    max_seq_length = FLAGS.max_seq_length
     data_dir = data_dir + '/treebank.' + mode
 
     def _read_pos_examples(filename):
