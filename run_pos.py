@@ -147,7 +147,6 @@ def get_labels(data_dir, mode):
             label = [x[1] for x in words]
             for x in label:
                 labels.add(x)
-    print(labels)
     return labels
 
 
@@ -452,7 +451,7 @@ def main():
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
     all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
-    all_labels = all_labels.append('PAD')
+    all_labels.append('PAD')
     print(all_labels)
 
     tpu_cluster_resolver = None
