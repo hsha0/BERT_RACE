@@ -451,7 +451,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = get_labels(FLAGS.data_dir, 'heldback')
+    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
     all_labels = all_labels.append('PAD')
 
     tpu_cluster_resolver = None
