@@ -453,6 +453,7 @@ def main():
 
     all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
     all_labels = all_labels.append('PAD')
+    print(all_labels)
 
     tpu_cluster_resolver = None
     if FLAGS.use_tpu and FLAGS.tpu_name:
