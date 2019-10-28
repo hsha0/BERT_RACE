@@ -204,6 +204,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
         input_mask.append(0)
         segment_ids.append(0)
 
+    print(len(input_ids), max_seq_length)
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
