@@ -197,7 +197,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
         tokens.append(token)
         segment_ids.append(0)
 
-    input_ids = tokenizer.convert_tokens_to_ides(tokens)
+    input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
     while len(input_ids) < max_seq_length:
         input_ids.append(0)
