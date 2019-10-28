@@ -14,7 +14,7 @@ for run in $(seq 1 2)
 do
     current_time=$(date "+%y%m%d-%H%M%S")
     SEED=${SEEDS[$run-1]}
-    python3 run_poa.py \
+    python3 run_pos.py \
     --seed=$SEED \
     --data_dir=$DATA_PATH \
     --do_lower_case=False \
