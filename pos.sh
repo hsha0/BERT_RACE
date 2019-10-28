@@ -10,7 +10,7 @@ DATA_PATH='/content/POS'
 
 declare -a SEEDS=(12345)
 
-for run in $(seq 1 2)
+for run in $(seq 1 1)
 do
     current_time=$(date "+%y%m%d-%H%M%S")
     SEED=${SEEDS[$run-1]}
