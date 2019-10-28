@@ -139,7 +139,6 @@ class PaddingInputExample(object):
 
 def get_labels(data_dir, mode):
     data_dir = data_dir + '/treebank.' + mode
-
     labels = set()
     with open(data_dir) as file:
         for line in file.readlines():
@@ -148,6 +147,7 @@ def get_labels(data_dir, mode):
             label = [x[1] for x in words]
             for x in label:
                 labels.add(x)
+    print(labels)
     return labels
 
 
