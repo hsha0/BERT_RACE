@@ -26,7 +26,7 @@ do
     --bert_config_file=$BERT_GC/bert_config.json \
     --init_checkpoint=$BERT_GC/bert_model.ckpt \
     --max_seq_length=192 \
-    --train_batch_size=256 \
+    --train_batch_size=64 \
     --eval_batch_size=8 \
     --learning_rate=5e-5 \
     --num_train_epochs=3.0 \
