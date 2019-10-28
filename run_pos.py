@@ -351,7 +351,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
             input_ids=input_ids,
             input_mask=input_mask,
             segment_ids=segment_ids,
-            labels=label_li,
+            all_labels=label_li,
             num_labels=num_labels,
             use_one_hot_embeddings=use_one_hot_embeddings,
             batch_size=batch_size
