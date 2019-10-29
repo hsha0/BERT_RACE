@@ -21,7 +21,7 @@ do
     --output_dir=gs://bert_sh/POS/POS_${SEED}_$current_time \
     --do_train=True \
     --do_eval=True \
-    --do_predict=False \
+    --do_predict=True \
     --vocab_file=$BERT_GC/vocab.txt \
     --bert_config_file=$BERT_GC/bert_config.json \
     --init_checkpoint=$BERT_GC/bert_model.ckpt \

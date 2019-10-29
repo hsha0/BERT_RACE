@@ -219,7 +219,6 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
 
-
     while len(input_ids) < max_seq_length:
         input_ids.append(0)
         input_mask.append(0)
@@ -427,7 +426,13 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 loss=total_loss,
                 eval_metrics=eval_metrics,
                 scaffold_fn=scaffold_fn)
+        else:
+            output_spec = tf.contrib.tpu.TPUEstimatorSpec(
+                mode=mode,
+                predictions={"probabilities": probabilities},
+                scaffold_fn=scaffold_fn)
         return output_spec
+
 
     return model_fn
 
@@ -575,6 +580,51 @@ def main():
             for key in sorted(result.keys()):
                 tf.logging.info("  %s = %s", key, str(result[key]))
                 writer.write("%s = %s\n" % (key, str(result[key])))
+
+    if FLAGS.do_predict:
+        predict_examples = create_examples(FLAGS.data_dir, 'test')
+        num_actual_predict_examples = len(predict_examples)
+
+        if FLAGS.use_tpu:
+            # TPU requires a fixed batch size for all batches, therefore the number
+            # of examples must be a multiple of the batch size, or else examples
+            # will get dropped. So we pad with fake examples which are ignored
+            # later on.
+            while len(predict_examples) % FLAGS.predict_batch_size != 0:
+                predict_examples.append(PaddingInputExample())
+
+        predict_features = convert_examples_to_features(
+            predict_examples, all_labels, FLAGS.max_seq_length, tokenizer)
+
+        tf.logging.info("***** Running prediction*****")
+        tf.logging.info("  Num examples = %d (%d actual, %d padding)",
+                        len(predict_examples), num_actual_predict_examples,
+                        len(predict_examples) - num_actual_predict_examples)
+        tf.logging.info("  Batch size = %d", FLAGS.predict_batch_size)
+
+        predict_drop_remainder = True if FLAGS.use_tpu else False
+        predict_input_fn = input_fn_builder(
+            features=predict_features,
+            seq_length=FLAGS.max_seq_length,
+            is_training=False,
+            drop_remainder=predict_drop_remainder)
+
+        result = estimator.predict(input_fn=predict_input_fn)
+
+        output_predict_file = os.path.join(FLAGS.output_dir, "test_results.tsv")
+        with tf.gfile.GFile(output_predict_file, "w") as writer:
+            num_written_lines = 0
+            tf.logging.info("***** Predict results *****")
+            for (i, prediction) in enumerate(result):
+                probabilities = prediction["probabilities"]
+                if i >= num_actual_predict_examples:
+                    break
+                output_line = "\t".join(
+                    str(class_probability)
+                    for class_probability in probabilities) + "\n"
+                writer.write(output_line)
+                num_written_lines += 1
+        assert num_written_lines == num_actual_predict_examples
 
 
 if __name__ == '__main__':
