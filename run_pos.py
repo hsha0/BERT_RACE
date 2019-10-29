@@ -218,13 +218,17 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
 
+
     while len(input_ids) < max_seq_length:
         input_ids.append(0)
         input_mask.append(0)
         segment_ids.append(0)
         label_li.append(all_labels.index('PAD'))
 
-
+    print(len(input_ids))
+    print(len(input_mask))
+    print(len(segment_ids))
+    print(len(label_li))
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
