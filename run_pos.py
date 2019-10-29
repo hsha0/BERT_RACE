@@ -165,8 +165,6 @@ def create_examples(data_dir, mode):
                 words = [word.split("/") for word in words]
                 sent = ["".join(x[:-1]) for x in words]
                 label = [x[-1] for x in words]
-                while len(label) < max_seq_length:
-                    label.append('PAD')
                 example = PosExample(id=i, sent=sent, label=label)
                 i += 1
                 examples.append(example)
