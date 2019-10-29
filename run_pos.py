@@ -335,7 +335,9 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
         per_example_loss *= input_mask
 
-        loss = tf.reduce_mean(per_example_loss)
+        loss = tf.reduce_sum(per_example_loss)
+        total_size = tf.reduce_sum(input_mask) + 1e-12
+        loss /= total_size
 
     return (loss, per_example_loss, logits, probabilities)
 
