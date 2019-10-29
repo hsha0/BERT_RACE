@@ -191,8 +191,10 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     tokens =[]
     segment_ids = []
     label_li = []
+    input_mask = []
     tokens.append("[CLS]")
     segment_ids.append(0)
+    input_mask.append(1)
 
     for i, word in enumerate(example.sent):
         tokens_word = tokenizer.tokenize(word)
@@ -200,6 +202,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
             tokens.append(tokens_word[0])
             segment_ids.append(0)
             label_li.append(example.label[i])
+            input_mask.append(1)
         else:
             j = 0
             for token in tokens_word:
@@ -207,16 +210,19 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
                 segment_ids.append(0)
                 if j == 0:
                     label_li.append(example.label[i])
+                    input_mask.append(1)
                     j = 1
                 else:
                     label_li.append('##')
+                    input_mask.append(0)
 
     if len(tokens) >= max_seq_length:
         tokens = tokens[: max_seq_length]
         label_li = label_li[:max_seq_length]
+        segment_ids = segment_ids[:max_seq_length]
+        input_mask = input_mask[:max_seq_length]
 
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
-    input_mask = [1] * len(input_ids)
 
     while len(input_ids) < max_seq_length:
         input_ids.append(0)
@@ -466,7 +472,6 @@ def main():
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
     all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
-    all_labels.append('PAD')
     all_labels.append('##')
 
     tpu_cluster_resolver = None
