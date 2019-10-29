@@ -201,7 +201,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
         if len(tokens_word) == 1:
             tokens.append(tokens_word[0])
             segment_ids.append(0)
-            label_li.append(example.label[i])
+            label_li.append(all_labels.index(example.label[i]))
             input_mask.append(1)
         else:
             j = 0
@@ -209,11 +209,11 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
                 tokens.append(token)
                 segment_ids.append(0)
                 if j == 0:
-                    label_li.append(example.label[i])
+                    label_li.append(all_labels.index(example.label[i]))
                     input_mask.append(1)
                     j = 1
                 else:
-                    label_li.append('##')
+                    label_li.append(all_labels.index('##'))
                     input_mask.append(0)
 
     if len(tokens) >= max_seq_length:
