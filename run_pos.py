@@ -287,7 +287,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
                     all_input_ids, shape=[num_examples, seq_length]
                 ),
             "input_mask":
-                tf.constant(all_input_mask, shape=[num_examples, seq_length]),
+                tf.constant(all_input_mask, shape=[num_examples, seq_length], dtype=tf.int32),
             "segment_ids":
                 tf.constant(all_segment_ids, shape=[num_examples, seq_length]),
             "label_li":

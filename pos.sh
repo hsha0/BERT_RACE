@@ -29,7 +29,7 @@ do
     --train_batch_size=64 \
     --eval_batch_size=8 \
     --learning_rate=5e-5 \
-    --num_train_epochs=3.0 \
+    --num_train_epochs=0.0 \
     --use_tpu=True \
     --tpu_name=$TPU_NAME
 done
