@@ -329,6 +329,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
 
         probabilities = tf.nn.softmax(logits, axis=-1)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
+        input_mask = tf.cast(input_mask, dtype=tf.float32)
 
         one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
 
