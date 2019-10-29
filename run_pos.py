@@ -334,6 +334,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
         per_example_loss *= input_mask
+
         loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
@@ -483,7 +484,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
     all_labels.append('##')
     all_labels.append('PAD')
 
@@ -506,7 +507,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'heldback')
+        train_examples = create_examples(FLAGS.data_dir, 'tagged')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
