@@ -218,7 +218,6 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
 
     if len(tokens) >= max_seq_length:
         tokens = tokens[: max_seq_length]
-        label_li = label_li[:max_seq_length]
         segment_ids = segment_ids[:max_seq_length]
         input_mask = input_mask[:max_seq_length]
 
