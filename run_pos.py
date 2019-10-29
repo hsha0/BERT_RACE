@@ -226,6 +226,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
         input_ids.append(0)
         input_mask.append(0)
         segment_ids.append(0)
+        label_li.append(all_labels.index('PAD'))
 
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
@@ -471,6 +472,7 @@ def main():
 
     all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
     all_labels.append('##')
+    all_labels.append('PAD')
 
     tpu_cluster_resolver = None
     if FLAGS.use_tpu and FLAGS.tpu_name:
