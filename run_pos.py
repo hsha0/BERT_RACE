@@ -468,7 +468,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
     all_labels.append('SYM')
     all_labels.append('##')
     all_labels.append('PAD')
@@ -492,7 +492,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'heldback')
+        train_examples = create_examples(FLAGS.data_dir, 'tagged')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
