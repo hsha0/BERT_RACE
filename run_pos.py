@@ -163,7 +163,7 @@ def create_examples(data_dir, mode):
             for line in file.readlines():
                 words = line.split(" ")[:-1]
                 words = [word.split("/") for word in words]
-                sent = ["".join(x[0:]) for x in words]
+                sent = ["".join(x[:-2]) for x in words]
                 label = [x[-1] for x in words]
                 while len(label) < max_seq_length:
                     label.append('PAD')
