@@ -221,6 +221,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
         input_ids.append(0)
         input_mask.append(0)
         segment_ids.append(0)
+        label_li.append(all_labels.index('PAD'))
 
 
     assert len(input_ids) == max_seq_length
@@ -466,6 +467,7 @@ def main():
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
     all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
+    all_labels.append('SYM')
     all_labels.append('##')
     all_labels.append('PAD')
 
