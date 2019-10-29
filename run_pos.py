@@ -409,18 +409,18 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
         elif mode == tf.estimator.ModeKeys.EVAL:
 
-            def metric_fn(per_example_loss, label_li, logits, is_real_example):
+            def metric_fn(per_example_loss, label_li, logits, is_real_example, input_mask):
                 predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
                 accuracy = tf.metrics.accuracy(
-                    labels=label_li, predictions=predictions, weights=is_real_example)
-                loss = tf.metrics.mean(values=per_example_loss, weights=is_real_example)
+                    labels=label_li, predictions=predictions, weights=input_mask*is_real_example)
+                loss = tf.metrics.mean(values=per_example_loss, weights=input_mask*is_real_example)
                 return {
                     "eval_accuracy": accuracy,
                     "eval_loss": loss,
                 }
 
             eval_metrics = (metric_fn,
-                            [per_example_loss, label_li, logits, is_real_example])
+                            [per_example_loss, label_li, logits, is_real_example, input_mask])
             output_spec = tf.contrib.tpu.TPUEstimatorSpec(
                 mode=mode,
                 loss=total_loss,
@@ -474,7 +474,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
     all_labels.append('##')
     all_labels.append('PAD')
 
@@ -497,7 +497,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'tagged')
+        train_examples = create_examples(FLAGS.data_dir, 'heldback')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
