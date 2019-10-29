@@ -7,6 +7,7 @@ import tokenization
 import modeling
 import os
 import optimization
+import numpy as np
 
 flags = tf.flags
 
@@ -230,6 +231,13 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
 
+    print(input_ids)
+    np.array(input_ids)
+    print(input_mask)
+    np.array(input_mask)
+    print(segment_ids)
+    np.array(segment_ids)
+    print(label_li)
     if ex_index < 5:
         tf.logging.info("*** Example ***")
         tf.logging.info("id: %s" % example.id)
