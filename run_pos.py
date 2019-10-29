@@ -197,7 +197,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     for i, word in enumerate(example.sent):
         tokens_word = tokenizer.tokenize(word)
         if len(tokens_word) == 1:
-            tokens.append(tokens_word)
+            tokens.append(tokens_word[0])
             segment_ids.append(0)
             label_li.append(example.label[i])
         else:
