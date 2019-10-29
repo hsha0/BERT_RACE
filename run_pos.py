@@ -333,7 +333,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
 
         one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-        print(per_example_loss)
+        per_example_loss *= input_mask
         loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
