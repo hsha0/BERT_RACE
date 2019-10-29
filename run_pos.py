@@ -146,7 +146,7 @@ def get_labels(data_dir, mode):
         for line in file.readlines():
             words = line.split(" ")[:-1]
             words = [word.split("/") for word in words]
-            label = [x[1] for x in words]
+            label = [x[-1] for x in words]
             for x in label:
                 labels.add(x)
     return labels
@@ -163,8 +163,8 @@ def create_examples(data_dir, mode):
             for line in file.readlines():
                 words = line.split(" ")[:-1]
                 words = [word.split("/") for word in words]
-                sent = [x[0] for x in words]
-                label = [x[1] for x in words]
+                sent = ["".join(x[0:]) for x in words]
+                label = [x[-1] for x in words]
                 while len(label) < max_seq_length:
                     label.append('PAD')
                 example = PosExample(id=i, sent=" ".join(sent), label=label)
@@ -173,8 +173,7 @@ def create_examples(data_dir, mode):
         return examples
 
     return _read_pos_examples(data_dir)
-def convert_label_to_number(label):
-    pass
+
 def convert_single_example(ex_index, example, all_labels, max_seq_length, tokenizer):
     """Converts a single 'PosExample' into a single 'InputFeature'"""
 
