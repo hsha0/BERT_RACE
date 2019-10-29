@@ -228,7 +228,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
-    print(label_li)
+    print(len(label_li))
     assert len(label_li) == max_seq_length
 
     if ex_index < 5:
