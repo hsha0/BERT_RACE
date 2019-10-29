@@ -167,7 +167,7 @@ def create_examples(data_dir, mode):
                 label = [x[-1] for x in words]
                 while len(label) < max_seq_length:
                     label.append('PAD')
-                example = PosExample(id=i, sent=" ".join(sent), label=label)
+                example = PosExample(id=i, sent=sent, label=label)
                 i += 1
                 examples.append(example)
         return examples
@@ -188,15 +188,29 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
                             label_li=label_li,
                             is_real_example=False)
 
-    tokens_sent = tokenizer.tokenize(example.sent)
+    #tokens_sent = tokenizer.tokenize(example.sent)
 
     tokens =[]
     segment_ids = []
+    label_li = []
     tokens.append("[CLS]")
     segment_ids.append(0)
-    for token in tokens_sent:
-        tokens.append(token)
-        segment_ids.append(0)
+
+    for i,word in enumerate(example.sent):
+        tokens_word = tokenizer.tokenize(word)
+        if len(tokens_word) == 1:
+            tokens.append(tokens_word)
+            segment_ids.append(0)
+            label_li.append(example.label[i])
+        else:
+            j = 0
+            for token in tokens_word:
+                tokens.append(token)
+                segment_ids.append(0)
+                if j == 0:
+                    label_li.append(example.label[i])
+                else:
+                    label_li.append('##')
 
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
@@ -208,10 +222,6 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
-
-    label_li = []
-    for label in example.label:
-        label_li.append(all_labels.index(label))
 
     if ex_index < 5:
         tf.logging.info("*** Example ***")
@@ -451,9 +461,9 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
     all_labels.append('PAD')
-    print(all_labels)
+    all_labels.append('##')
 
     tpu_cluster_resolver = None
     if FLAGS.use_tpu and FLAGS.tpu_name:
@@ -474,7 +484,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'heldback')
+        train_examples = create_examples(FLAGS.data_dir, 'tagged')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
