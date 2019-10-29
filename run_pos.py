@@ -309,7 +309,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
         return d
     return input_fn
 
-def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, all_labels,
+def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, true_labels,
                  num_labels, use_one_hot_embeddings, batch_size):
     model = modeling.BertModel(
         config=bert_config,
@@ -330,9 +330,9 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, a
         probabilities = tf.nn.softmax(logits, axis=-1)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
 
-        one_hot_labels = tf.one_hot(all_labels, depth=num_labels, dtype=tf.float32)
+        one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
 
-        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs * input_mask, axis=-1)
         loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
@@ -372,7 +372,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
             input_ids=input_ids,
             input_mask=input_mask,
             segment_ids=segment_ids,
-            all_labels=label_li,
+            true_labels=label_li,
             num_labels=num_labels,
             use_one_hot_embeddings=use_one_hot_embeddings,
             batch_size=batch_size
@@ -482,7 +482,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
     all_labels.append('##')
     all_labels.append('PAD')
 
@@ -505,7 +505,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'tagged')
+        train_examples = create_examples(FLAGS.data_dir, 'heldback')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
