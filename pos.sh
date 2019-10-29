@@ -11,6 +11,7 @@ DATA_PATH='/content/POS'
 declare -a SEEDS=(12345 66666 22001 78925 11982 67877 987123 65492 98045 652343)
 
 for run in $(seq 1 10)
+do
     current_time=$(date "+%y%m%d-%H%M%S")
     SEED=${SEEDS[$run-1]}
     python3 run_pos.py \
