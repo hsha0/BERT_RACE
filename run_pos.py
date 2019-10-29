@@ -211,9 +211,13 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
                 else:
                     label_li.append('##')
 
+    if len(tokens) >= max_seq_length - 1:
+        tokens = tokens[0:(max_seq_length - 1)]
+        label_li = label_li[0:(max_seq_length - 1)]
+
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
-    print(len(input_ids))
+
     while len(input_ids) < max_seq_length:
         input_ids.append(0)
         input_mask.append(0)
