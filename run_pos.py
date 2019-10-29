@@ -211,9 +211,9 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
                 else:
                     label_li.append('##')
 
-    if len(tokens) >= max_seq_length - 1:
-        tokens = tokens[0:(max_seq_length - 1)]
-        label_li = label_li[0:(max_seq_length - 1)]
+    if len(tokens) >= max_seq_length:
+        tokens = tokens[: max_seq_length]
+        label_li = label_li[:max_seq_length]
 
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
@@ -295,7 +295,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
 
         if is_training:
             d = d.repeat()
-            d = d.shuffle(buffer_size=100, seed=FLAGS.seed)
+            d = d.shuffle(buffer_size=1000, seed=FLAGS.seed)
 
         d = d.batch(batch_size=batch_size, drop_remainder=drop_remainder)
         return d
