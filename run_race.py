@@ -17,7 +17,7 @@ flags = tf.flags
 
 FLAGS = flags.FLAGS
 
-## Required parameters
+# Required parameters
 flags.DEFINE_string(
     "data_dir", None,
     "The input data dir. Should contain the .txt files (or other data files) "
@@ -37,7 +37,7 @@ flags.DEFINE_string(
     "output_dir", None,
     "The output directory where the model checkpoints will be written.")
 
-## Other parameters
+# Other parameters
 flags.DEFINE_integer("seed", 12345, "Random seed.")
 flags.DEFINE_string(
     "init_checkpoint", None,

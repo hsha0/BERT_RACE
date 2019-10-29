@@ -2,18 +2,18 @@
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 
 TPU_NAME='grpc://10.26.122.122:8470'
-TASK_NAME='middle'
 
 BERT_BASE_DIR='BERT_BASE/uncased_L-12_H-768_A-12'
 BERT_GC='gs://bert_sh/BERT_BASE/uncased_L-12_H-768_A-12'
 DATA_PATH='/content/RACE'
 
-current_time=$(date "+%y%m%d-%H%M%S")
+
 
 declare -a SEEDS=(699203 332037 5591 99716 676765 785600 65274)
 
 for run in $(seq 1 7)
 do
+    current_time=$(date "+%y%m%d-%H%M%S")
     SEED=${SEEDS[$run-1]}
     python3 run_race.py \
     --seed=$SEED \
