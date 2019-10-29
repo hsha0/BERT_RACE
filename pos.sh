@@ -19,9 +19,9 @@ do
     --data_dir=$DATA_PATH \
     --do_lower_case=False \
     --output_dir=gs://bert_sh/POS/POS_${SEED}_$current_time \
-    --do_train=True \
+    --do_train=False \
     --do_eval=True \
-    --do_predict=True \
+    --do_predict=False \
     --vocab_file=$BERT_GC/vocab.txt \
     --bert_config_file=$BERT_GC/bert_config.json \
     --init_checkpoint=$BERT_GC/bert_model.ckpt \
@@ -29,7 +29,7 @@ do
     --train_batch_size=64 \
     --eval_batch_size=8 \
     --learning_rate=5e-5 \
-    --num_train_epochs=0.0 \
+    --num_train_epochs=3.0 \
     --use_tpu=True \
     --tpu_name=$TPU_NAME
 done
