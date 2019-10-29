@@ -252,7 +252,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
 def convert_examples_to_features(examples, all_labels, max_seq_length, tokenizer):
     features = []
     for (ex_index, example) in enumerate(examples):
-        if ex_index % 100 == 0:
+        if ex_index % 1000 == 0:
             tf.logging.info("Writing example %d of %d" % (ex_index, len(examples)))
 
         feature = convert_single_example(ex_index, example, all_labels,
@@ -300,7 +300,7 @@ def input_fn_builder(features, seq_length, is_training, drop_remainder):
 
         if is_training:
             d = d.repeat()
-            d = d.shuffle(buffer_size=1000, seed=FLAGS.seed)
+            d = d.shuffle(buffer_size=100, seed=FLAGS.seed)
 
         d = d.batch(batch_size=batch_size, drop_remainder=drop_remainder)
         return d
