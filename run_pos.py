@@ -411,7 +411,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
             def metric_fn(per_example_loss, label_li, logits, is_real_example, input_mask):
                 predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
-                weights = np.matmul(input_mask, is_real_example).astype(tf.float32)
+                weights = np.matmul(input_mask, is_real_example).astype('float32')
                 accuracy = tf.metrics.accuracy(
                     labels=label_li, predictions=predictions, weights=weights)
                 loss = tf.metrics.mean(values=per_example_loss, weights=weights)
