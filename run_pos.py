@@ -213,6 +213,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     if len(tokens) >= max_seq_length:
         tokens = tokens[: max_seq_length]
         segment_ids = segment_ids[:max_seq_length]
+        label_li = label_li[:max_seq_length]
 
     input_ids = tokenizer.convert_tokens_to_ids(tokens)
     input_mask = [1] * len(input_ids)
@@ -227,6 +228,7 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     assert len(input_ids) == max_seq_length
     assert len(input_mask) == max_seq_length
     assert len(segment_ids) == max_seq_length
+    assert len(label_li) == max_seq_length
 
     if ex_index < 5:
         tf.logging.info("*** Example ***")
