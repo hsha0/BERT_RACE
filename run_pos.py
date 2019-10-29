@@ -475,7 +475,6 @@ def main():
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
     all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
-    all_labels.append('SYM')
     all_labels.append('##')
     all_labels.append('PAD')
 
