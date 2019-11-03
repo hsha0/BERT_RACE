@@ -335,9 +335,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
         per_example_loss *= input_mask
 
-        loss = tf.reduce_sum(per_example_loss)
-        total_size = tf.reduce_sum(input_mask) + 1e-12
-        loss /= total_size
+        loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
 
@@ -486,7 +484,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'tagged'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'tagged.large.refined'))
     all_labels.append('##')
     all_labels.append('PAD')
 
@@ -509,7 +507,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'tagged')
+        train_examples = create_examples(FLAGS.data_dir, 'tagged.large.refined')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
@@ -548,7 +546,7 @@ def main():
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
     if FLAGS.do_eval:
-        eval_examples = create_examples(FLAGS.data_dir, 'test')
+        eval_examples = create_examples(FLAGS.data_dir, 'heldback')
         num_actual_eval_examples = len(eval_examples)
         if FLAGS.use_tpu:
             # TPU requires a fixed batch size for all batches, therefore the number
@@ -593,7 +591,7 @@ def main():
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
     if FLAGS.do_predict:
-        predict_examples = create_examples(FLAGS.data_dir, 'test')
+        predict_examples = create_examples(FLAGS.data_dir, 'heldback')
         num_actual_predict_examples = len(predict_examples)
 
         if FLAGS.use_tpu:

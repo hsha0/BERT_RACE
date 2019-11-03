@@ -1,7 +1,7 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 
-TPU_NAME='grpc://10.68.29.130:8470'
+TPU_NAME='grpc://10.9.168.66:8470'
 
 BERT_GC='gs://bert_sh/BERT_LARGE/wwm_cased_L-24_H-1024_A-16'
 DATA_PATH='/content/POS'
@@ -18,7 +18,7 @@ do
     --seed=$SEED \
     --data_dir=$DATA_PATH \
     --do_lower_case=False \
-    --output_dir=gs://bert_sh/POS_Average_Loss/POS_${SEED}_$current_time \
+    --output_dir=gs://bert_sh/POS_Large/POS_${SEED}_$current_time \
     --do_train=True \
     --do_eval=True \
     --do_predict=False \
