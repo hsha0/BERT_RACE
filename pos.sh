@@ -19,7 +19,7 @@ do
     --seed=$SEED \
     --data_dir=$DATA_PATH \
     --do_lower_case=False \
-    --output_dir=gs://bert_sh/POS_Large/POS_${SEED}_$current_time \
+    --output_dir=gs://bert_sh/POS_Large_CRF/POS_${SEED}_$current_time \
     --do_train=True \
     --do_eval=True \
     --do_predict=False \
