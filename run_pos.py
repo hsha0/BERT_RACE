@@ -3,6 +3,7 @@ from __future__ import division
 from __future__ import print_function
 
 import tensorflow as tf
+import tensorflow_addons as tfa
 import tokenization
 import modeling
 import os
@@ -32,6 +33,7 @@ flags.DEFINE_string(
     "The output directory where the model checkpoints will be written.")
 
 # Other parameters
+flags.DEFINE_bool("use_crf", False, "Whether use CRF layers. (defualt: False).")
 flags.DEFINE_integer("seed", 12345, "Random seed.")
 flags.DEFINE_string(
     "init_checkpoint", None,
@@ -326,16 +328,25 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         if is_training:
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
         logits = tf.layers.dense(output_layer, num_labels, activation=None)
-
-        probabilities = tf.nn.softmax(logits, axis=-1)
-        log_probs = tf.nn.log_softmax(logits, axis=-1)
         input_mask = tf.cast(input_mask, dtype=tf.float32)
 
-        one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
-        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-        per_example_loss *= input_mask
+        if not FLAGS.use_crf:
+            probabilities = tf.nn.softmax(logits, axis=-1)
+            log_probs = tf.nn.log_softmax(logits, axis=-1)
 
-        loss = tf.reduce_mean(per_example_loss)
+            one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
+            per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+            per_example_loss *= input_mask
+
+            loss = tf.reduce_mean(per_example_loss)
+        else:
+            mask2len = tf.reduce_sum(input_mask, axis=1)
+            log_probs, transition = tfa.text.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
+            probabilities = np.exp(log_probs)
+
+            one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
+            per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+            loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
 
