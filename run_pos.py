@@ -432,7 +432,8 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 #weights = np.matmul(input_mask, is_real_example).astype('float32')
                 accuracy = tf.metrics.accuracy(
                     labels=label_li, predictions=predictions, weights=input_mask)
-                loss = tf.metrics.mean(values=per_example_loss, weights=input_mask)
+                #loss = tf.metrics.mean(values=per_example_loss, weights=input_mask)
+                loss = total_loss
                 return {
                     "eval_accuracy": accuracy,
                     "eval_loss": loss,
@@ -493,7 +494,7 @@ def main():
         params.write("Use tpu: " + str(FLAGS.use_tpu) + "\n")
         params.write("Output dir:" + str(FLAGS.output_dir) + "\n")
 
-    all_labels = list(get_labels(FLAGS.data_dir, 'heldback'))
+    all_labels = list(get_labels(FLAGS.data_dir, 'tagged.large.refined'))
     all_labels.append('##')
     all_labels.append('PAD')
 
@@ -516,7 +517,7 @@ def main():
     num_train_steps = None
     num_warmup_steps = None
     if FLAGS.do_train:
-        train_examples = create_examples(FLAGS.data_dir, 'heldback')
+        train_examples = create_examples(FLAGS.data_dir, 'tagged.large.refined')
         num_train_steps = int(
             len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
         num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
@@ -555,7 +556,7 @@ def main():
         estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
     if FLAGS.do_eval:
-        eval_examples = create_examples(FLAGS.data_dir, 'test')
+        eval_examples = create_examples(FLAGS.data_dir, 'heldback')
         num_actual_eval_examples = len(eval_examples)
         if FLAGS.use_tpu:
             # TPU requires a fixed batch size for all batches, therefore the number
@@ -600,7 +601,7 @@ def main():
                 writer.write("%s = %s\n" % (key, str(result[key])))
 
     if FLAGS.do_predict:
-        predict_examples = create_examples(FLAGS.data_dir, 'test')
+        predict_examples = create_examples(FLAGS.data_dir, 'heldback')
         num_actual_predict_examples = len(predict_examples)
 
         if FLAGS.use_tpu:
