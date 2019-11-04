@@ -329,22 +329,19 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         logits = tf.layers.dense(output_layer, num_labels, activation=None)
         input_mask = tf.cast(input_mask, dtype=tf.float32)
 
-        if not FLAGS.use_crf:
-            probabilities = tf.nn.softmax(logits, axis=-1)
-            log_probs = tf.nn.log_softmax(logits, axis=-1)
+        probabilities = tf.nn.softmax(logits, axis=-1)
+        log_probs = tf.nn.log_softmax(logits, axis=-1)
+        one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
+        per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
 
-            one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
-            per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-            per_example_loss *= input_mask
-
-            loss = tf.reduce_mean(per_example_loss)
-        else:
+        if FLAGS.use_crf:
             mask2len = tf.reduce_sum(input_mask, axis=1)
             log_probs, transition = tf.contrib.crf.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
-            per_example_loss = None
-
-            loss = tf.reduce_mean(-log_probs)
             probabilities = tf.exp(log_probs)
+            loss = tf.reduce_mean(-log_probs)
+
+        else:
+            loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
 
