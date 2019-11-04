@@ -341,7 +341,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
             loss = tf.reduce_mean(per_example_loss)
         else:
             mask2len = tf.reduce_sum(input_mask, axis=1)
-            log_probs, transition = tfa.text.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
+            log_probs, transition = tf.contrib.crf.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
             probabilities = np.exp(log_probs)
 
             one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
