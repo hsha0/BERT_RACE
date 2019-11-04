@@ -1,7 +1,7 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 #12345 66666 22001 78925 11982 67877 987123 65492 98045 652343
-TPU_NAME='grpc://10.109.101.106:8470'
+TPU_NAME='grpc://10.0.157.130:8470'
 
 BERT_GC='gs://bert_sh/BERT_LARGE/wwm_cased_L-24_H-1024_A-16'
 DATA_PATH='/content/POS'
