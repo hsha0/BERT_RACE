@@ -196,7 +196,8 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     tokens.append("[CLS]")
     segment_ids.append(0)
     label_li.append(all_labels.index('PAD'))
-    input_mask.append(0)
+    ###=0
+    input_mask.append(1)
 
     for i, word in enumerate(example.sent):
         tokens_word = tokenizer.tokenize(word)
@@ -216,7 +217,8 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
                     j = 1
                 else:
                     label_li.append(all_labels.index('##'))
-                    input_mask.append(0)
+                    ###=0
+                    input_mask.append(1)
 
     if len(tokens) >= max_seq_length:
         tokens = tokens[: max_seq_length]
