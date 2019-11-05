@@ -338,7 +338,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         if FLAGS.use_crf:
             mask2len = tf.reduce_sum(input_mask, axis=1)
             print(mask2len)
-            log_probs, transition = tf.contrib.crf.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
+            log_probs, trans = tf.contrib.crf.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
             predict, viterbi_score = tf.contrib.crf.crf_decode(logits, trans, mask2len)
             print(predict)
             probabilities = tf.exp(log_probs)
