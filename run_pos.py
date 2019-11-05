@@ -337,6 +337,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
 
         if FLAGS.use_crf:
             mask2len = tf.reduce_sum(input_mask, axis=1)
+            print(mask2len)
             log_probs, transition = tf.contrib.crf.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
             probabilities = tf.exp(log_probs)
             loss = tf.reduce_mean(-log_probs)
