@@ -340,7 +340,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
                 )
             log_likelihood, transition = tf.contrib.crf.crf_log_likelihood(logits,true_labels,transition_params =trans,
                                                                            sequence_lengths=mask2len)
-            print(log_likelihood)
+            print('!!!!!!!!!!!', log_likelihood)
             tf.print(log_likelihood, output_stream=sys.stdout)
 
             loss = tf.math.reduce_mean(-log_likelihood)
@@ -437,8 +437,6 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
             def metric_fn(per_example_loss, label_li, logits, is_real_example, input_mask):
                 predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
-                print(predictions)
-                print(tf.shape(predictions))
                 #weights = np.matmul(input_mask, is_real_example).astype('float32')
                 accuracy = tf.metrics.accuracy(
                     labels=label_li, predictions=predictions, weights=input_mask)
