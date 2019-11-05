@@ -8,6 +8,7 @@ import modeling
 import os
 import optimization
 import numpy as np
+import sys
 
 flags = tf.flags
 
@@ -327,25 +328,33 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         if is_training:
             output_layer = tf.nn.dropout(output_layer, keep_prob=0.9)
         logits = tf.layers.dense(output_layer, num_labels, activation=None)
-        input_mask = tf.cast(input_mask, dtype=tf.float32)
+        logits = tf.reshape(logits, [-1, FLAGS.max_seq_length, num_labels])
 
+        if FLAGS.use_crf:
+            mask2len = tf.reduce_sum(input_mask, axis=1)
+            with tf.variable_scope("crf_loss"):
+                trans = tf.get_variable(
+                    "transition",
+                    shape=[num_labels, num_labels],
+                    initializer=tf.contrib.layers.xavier_initializer()
+                )
+            log_likelihood, transition = tf.contrib.crf.crf_log_likelihood(logits,true_labels,transition_params =trans,
+                                                                           sequence_lengths=mask2len)
+            print(log_likelihood)
+            tf.print(log_likelihood, output_stream=sys.stdout)
+
+            loss = tf.math.reduce_mean(-log_likelihood)
+
+
+
+        input_mask = tf.cast(input_mask, dtype=tf.float32)
         probabilities = tf.nn.softmax(logits, axis=-1)
         log_probs = tf.nn.log_softmax(logits, axis=-1)
         one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
         per_example_loss *= input_mask
 
-        if FLAGS.use_crf:
-            mask2len = tf.reduce_sum(input_mask, axis=1)
-            print(mask2len)
-            log_probs, trans = tf.contrib.crf.crf_log_likelihood(logits, true_labels, sequence_lengths=mask2len)
-            predict, viterbi_score = tf.contrib.crf.crf_decode(logits, trans, mask2len)
-            print(predict)
-            probabilities = tf.exp(log_probs)
-            loss = tf.reduce_mean(-log_probs)
-
-        else:
-            loss = tf.reduce_mean(per_example_loss)
+        loss = tf.reduce_mean(per_example_loss)
 
     return (loss, per_example_loss, logits, probabilities)
 
