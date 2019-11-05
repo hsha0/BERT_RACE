@@ -333,6 +333,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         log_probs = tf.nn.log_softmax(logits, axis=-1)
         one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
         per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+        per_example_loss *= input_mask
 
         if FLAGS.use_crf:
             mask2len = tf.reduce_sum(input_mask, axis=1)
