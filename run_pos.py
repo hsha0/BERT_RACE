@@ -343,15 +343,16 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
             loss = tf.math.reduce_mean(-log_likelihood)
             predictions, viterbi_score = tf.contrib.crf.crf_decode(logits, transition, mask2len)
 
+        else:
+            input_mask = tf.cast(input_mask, dtype=tf.float32)
+            probabilities = tf.nn.softmax(logits, axis=-1)
+            log_probs = tf.nn.log_softmax(logits, axis=-1)
+            one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
+            per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
+            per_example_loss *= input_mask
 
-        #input_mask = tf.cast(input_mask, dtype=tf.float32)
-        #probabilities = tf.nn.softmax(logits, axis=-1)
-        #log_probs = tf.nn.log_softmax(logits, axis=-1)
-        #one_hot_labels = tf.one_hot(true_labels, depth=num_labels, dtype=tf.float32)
-        #per_example_loss = -tf.reduce_sum(one_hot_labels * log_probs, axis=-1)
-        #per_example_loss *= input_mask
-
-        #loss = tf.reduce_mean(per_example_loss)
+            loss = tf.reduce_mean(per_example_loss)
+            predictions = tf.argmax(logits, axis=-1, output_type=tf.int32)
 
     return (loss, logits, predictions)
 
