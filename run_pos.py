@@ -342,7 +342,6 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
                                                                            sequence_lengths=mask2len)
             loss = tf.math.reduce_mean(-log_likelihood)
             predictions, viterbi_score = tf.contrib.crf.crf_decode(logits, transition, mask2len)
-            print('!!!!!!!', predictions)
 
 
         #input_mask = tf.cast(input_mask, dtype=tf.float32)
