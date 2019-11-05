@@ -20,12 +20,12 @@ do
     --data_dir=$DATA_PATH \
     --do_lower_case=False \
     --output_dir=gs://bert_sh/POS_Large_CRF/POS_${SEED}_$current_time \
-    --do_train=False \
+    --do_train=True \
     --do_eval=True \
     --do_predict=False \
     --vocab_file=$BERT_GC/vocab.txt \
     --bert_config_file=$BERT_GC/bert_config.json \
-    --init_checkpoint=gs://bert_sh/POS_Large_CRF/POS_12345_191104-220210/model.ckpt-5697 \
+    --init_checkpoint=$BERT_GC/bert_model.ckpt \
     --max_seq_length=128 \
     --train_batch_size=64 \
     --eval_batch_size=8 \
