@@ -194,31 +194,29 @@ def convert_single_example(ex_index, example, all_labels, max_seq_length, tokeni
     label_li = []
     input_mask = []
     tokens.append("[CLS]")
-    segment_ids.append(0)
+    segment_ids.append(1)
     label_li.append(all_labels.index('PAD'))
-    ###=0
-    input_mask.append(1)
+    input_mask.append(0)
 
     for i, word in enumerate(example.sent):
         tokens_word = tokenizer.tokenize(word)
         if len(tokens_word) == 1:
             tokens.append(tokens_word[0])
-            segment_ids.append(0)
+            segment_ids.append(1)
             label_li.append(all_labels.index(example.label[i]))
             input_mask.append(1)
         else:
             j = 0
             for token in tokens_word:
                 tokens.append(token)
-                segment_ids.append(0)
+                segment_ids.append(1)
                 if j == 0:
                     label_li.append(all_labels.index(example.label[i]))
                     input_mask.append(1)
                     j = 1
                 else:
                     label_li.append(all_labels.index('##'))
-                    ###=0
-                    input_mask.append(1)
+                    input_mask.append(0)
 
     if len(tokens) >= max_seq_length:
         tokens = tokens[: max_seq_length]
@@ -333,7 +331,7 @@ def create_model(bert_config, is_training, input_ids, input_mask, segment_ids, t
         logits = tf.reshape(logits, [-1, FLAGS.max_seq_length, num_labels])
 
         if FLAGS.use_crf:
-            mask2len = tf.reduce_sum(input_mask, axis=1)
+            mask2len = tf.reduce_sum(segment_ids, axis=1)
             with tf.variable_scope("crf_loss"):
                 trans = tf.get_variable(
                     "transition",
