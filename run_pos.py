@@ -433,17 +433,17 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
         elif mode == tf.estimator.ModeKeys.EVAL:
 
-            def metric_fn(predictions, total_loss, label_li, input_mask):
+            def metric_fn(predictions, label_li, input_mask):
                 accuracy = tf.metrics.accuracy(
                     labels=label_li, predictions=predictions, weights=input_mask)
-                loss = total_loss
+                #loss = total_loss
                 return {
                     "eval_accuracy": accuracy,
-                    "eval_loss": loss,
+                    #"eval_loss": loss,
                 }
 
             eval_metrics = (metric_fn,
-                            [predictions, total_loss, label_li, input_mask])
+                            [predictions, label_li, input_mask])
             output_spec = tf.contrib.tpu.TPUEstimatorSpec(
                 mode=mode,
                 loss=total_loss,
