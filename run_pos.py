@@ -430,8 +430,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
                 #weights = np.matmul(input_mask, is_real_example).astype('float32')
                 accuracy = tf.metrics.accuracy(
                     labels=label_li, predictions=predictions, weights=input_mask)
-                #loss = tf.metrics.mean(values=per_example_loss, weights=input_mask)
-                loss = total_loss
+                loss = tf.metrics.mean(values=per_example_loss, weights=input_mask)
                 return {
                     "eval_accuracy": accuracy,
                     "eval_loss": loss,
