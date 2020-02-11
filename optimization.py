@@ -23,7 +23,7 @@ import tensorflow as tf
 import lamb
 
 
-def create_optimizer(loss, init_lr, num_train_steps, num_warmup_steps, use_tpu):
+def create_optimizer(loss, init_lr, num_train_steps, num_warmup_steps, use_tpu, weight_decay=0.0):
   """Creates an optimizer training op."""
   global_step = tf.train.get_or_create_global_step()
 
