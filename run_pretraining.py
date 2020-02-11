@@ -114,7 +114,7 @@ flags.DEFINE_integer(
 
 masked_token = ["[MASK]"]
 tokenizer = tokenization.FullTokenizer(
-        vocab_file=FLAGS.vocab_file, do_lower_case=FLAGS.do_lower_case)
+        vocab_file=FLAGS.vocab_file, do_lower_case=True)
 MASK_ID = tokenizer.convert_tokens_to_ids(masked_token)[0]
 
 def replace_elements_by_indices(old, new, indices):
