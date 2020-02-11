@@ -20,6 +20,7 @@ from __future__ import print_function
 
 import re
 import tensorflow as tf
+import lamb
 
 
 def create_optimizer(loss, init_lr, num_train_steps, num_warmup_steps, use_tpu):
@@ -56,6 +57,7 @@ def create_optimizer(loss, init_lr, num_train_steps, num_warmup_steps, use_tpu):
   # It is recommended that you use this optimizer for fine tuning, since this
   # is how the model was trained (note that the Adam m/v variables are NOT
   # loaded from init_checkpoint.)
+  '''
   optimizer = AdamWeightDecayOptimizer(
       learning_rate=learning_rate,
       weight_decay_rate=0.01,
@@ -63,12 +65,20 @@ def create_optimizer(loss, init_lr, num_train_steps, num_warmup_steps, use_tpu):
       beta_2=0.999,
       epsilon=1e-6,
       exclude_from_weight_decay=["LayerNorm", "layer_norm", "bias"])
+  '''
+  optimizer = lamb.LAMB(learning_rate=learning_rate,
+                                  weight_decay_rate=weight_decay,
+                                  beta_1=0.9,
+                                  beta_2=0.999,
+                                  epsilon=1e-6,
+                                  exclude_from_weight_decay="LayerNorm, layer_norm, bias",
+                                  name='LAMB')
 
-  if use_tpu:
-    optimizer = tf.contrib.tpu.CrossShardOptimizer(optimizer)
 
   tvars = tf.trainable_variables()
   grads = tf.gradients(loss, tvars)
+  if use_tpu:
+      grads = [tf.compat.v1.tpu.cross_replica_sum(grad) for grad in grads if (grad is not None)]
 
   # This is how the model was pre-trained.
   (grads, _) = tf.clip_by_global_norm(grads, clip_norm=1.0)
