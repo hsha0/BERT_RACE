@@ -229,7 +229,8 @@ class BertModel(object):
             first_token_tensor,
             config.hidden_size,
             activation=tf.tanh,
-            kernel_initializer=create_initializer(config.initializer_range))
+            kernel_initializer=create_initializer(config.initializer_range),
+            trainable=False)
 
   def get_pooled_output(self):
     return self.pooled_output
