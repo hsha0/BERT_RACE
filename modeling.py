@@ -361,7 +361,7 @@ def dropout(input_tensor, dropout_prob):
 
 def layer_norm(input_tensor, name=None):
   """Run layer normalization on the last dimension of the tensor."""
-  return tf.keras.layers.LayerNormalization(axis=-1, epsilon=1e-12, name=name)(input_tensor)
+  return tf.keras.layers.LayerNormalization(axis=-1, epsilon=1e-12, name='layer_norm')(input_tensor)
 
 
 def layer_norm_and_dropout(input_tensor, dropout_prob, name=None):
