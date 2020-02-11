@@ -1,4 +1,4 @@
-TPU_NAME='grpc://10.93.191.82:8470'
+TPU_NAME='grpc://10.120.244.250:8470'
 BERT_GC='gs://bert_sh'
 
 python3 run_pretraining.py \
