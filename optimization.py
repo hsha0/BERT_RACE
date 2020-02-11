@@ -81,10 +81,9 @@ def create_optimizer(loss, init_lr, num_train_steps, num_warmup_steps, use_tpu, 
       grads = [tf.compat.v1.tpu.cross_replica_sum(grad) for grad in grads if (grad is not None)]
 
   # This is how the model was pre-trained.
-  (grads, _) = tf.clip_by_global_norm(grads, clip_norm=1.0)
+  #(grads, _) = tf.clip_by_global_norm(grads, clip_norm=1.0)
 
-  train_op = optimizer.apply_gradients(
-      zip(grads, tvars))
+  train_op = optimizer.apply_gradients(zip(grads, tvars))
 
   # Normally the global step update is done inside of `apply_gradients`.
   # However, `AdamWeightDecayOptimizer` doesn't do this. But if you use
