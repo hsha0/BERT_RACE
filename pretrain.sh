@@ -12,7 +12,7 @@ python3 run_pretraining.py \
 --max_seq_length=128 \
 --num_train_steps=1000000 \
 --max_predictions_per_seq=20 \
---save_checkpoints_steps=12500 \
---iterations_per_loop=12500 \
+--save_checkpoints_steps=6250 \
+--iterations_per_loop=6250 \
 --use_tpu=true \
 --tpu_name=$TPU_NAME
