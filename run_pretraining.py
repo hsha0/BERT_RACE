@@ -277,8 +277,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
 
       eval_metrics = (metric_fn, [
           masked_lm_example_loss, masked_lm_log_probs, masked_lm_ids,
-          masked_lm_weights, next_sentence_example_loss,
-          next_sentence_log_probs, next_sentence_labels
+          masked_lm_weights
       ])
       output_spec = tf.contrib.tpu.TPUEstimatorSpec(
           mode=mode,
@@ -395,14 +394,6 @@ def input_fn_builder(input_files,
             tf.FixedLenFeature([max_seq_length], tf.int64),
         "segment_ids":
             tf.FixedLenFeature([max_seq_length], tf.int64),
-        "masked_lm_positions":
-            tf.FixedLenFeature([max_predictions_per_seq], tf.int64),
-        "masked_lm_ids":
-            tf.FixedLenFeature([max_predictions_per_seq], tf.int64),
-        "masked_lm_weights":
-            tf.FixedLenFeature([max_predictions_per_seq], tf.float32),
-        "next_sentence_labels":
-            tf.FixedLenFeature([1], tf.int64),
     }
 
     # For training, we want a lot of parallel reading and shuffling.
