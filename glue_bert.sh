@@ -1,13 +1,13 @@
 TPU_NAME='grpc://10.8.246.2:8470'
 BERT_GC='gs://bert_sh'
-INIT_CKPT=$BERT_GC/bert_pretrain/bert_5e-4/model.ckpt-150000
+INIT_CKPT=$BERT_GC/bert_pretrain/bert_5e-4/model.ckpt-200000
 TASK=MNLI
 
 python3 run_classifier.py \
 --bert_config_file=$BERT_GC/small_config.json \
 --task_name=$TASK \
 --data_dir=gs://electra/glue/glue_data/$TASK \
---output_dir=$BERT_GC/glue_results/bert_5e-4/$TASK \
+--output_dir=$BERT_GC/glue_results/bert_5e-4_200K/$TASK \
 --init_checkpoint= $INIT_CKPT \
 --vocab_file=vocab.txt \
 --do_train=True \
