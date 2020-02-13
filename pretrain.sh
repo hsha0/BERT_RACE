@@ -10,7 +10,7 @@ python3 run_pretraining.py \
 --learning_rate=5e-4 \
 --train_batch_size=128 \
 --max_seq_length=128 \
---num_train_steps=1000000 \
+--num_train_steps=1450000 \
 --max_predictions_per_seq=20 \
 --save_checkpoints_steps=6250 \
 --iterations_per_loop=6250 \
