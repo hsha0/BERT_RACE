@@ -904,7 +904,6 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
     tvars = tf.compat.v1.trainable_variables()
     initialized_variable_names = {}
     scaffold_fn = None
-    print("init_checkpoint", init_checkpoint, '\n\n\n')
     if init_checkpoint:
 
       (assignment_map, initialized_variable_names
@@ -1142,6 +1141,7 @@ def main(_):
 
   regression = False
   if task_name == 'sts-b': regression = True
+  print(FLAGS.init_checkpoint, '\n\n\n')
   model_fn = model_fn_builder(
       bert_config=bert_config,
       num_labels=len(label_list),
