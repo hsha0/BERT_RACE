@@ -1,6 +1,6 @@
 TPU_NAME='grpc://10.8.246.2:8470'
 BERT_GC='gs://bert_sh'
-INIT_CKPT=gs://bert_sh/bert_pretrain/bert_5e-4/model.ckpt-225000
+INIT_CKPT='gs://bert_sh/bert_pretrain/bert_5e-4/model.ckpt-231250'
 TASK=MRPC
 
 python3 run_classifier.py \
@@ -8,7 +8,7 @@ python3 run_classifier.py \
 --task_name=$TASK \
 --data_dir=gs://electra/glue/glue_data/$TASK \
 --output_dir=$BERT_GC/glue_results/bert_5e-4_200K/$TASK \
---init_checkpoint= $INIT_CKPT \
+--init_checkpoint=$INIT_CKPT \
 --vocab_file=vocab.txt \
 --do_train=True \
 --do_eval=True \
