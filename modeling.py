@@ -132,6 +132,7 @@ class BertModel(object):
                config,
                is_training,
                input_ids,
+               train_pooler=True,
                input_mask=None,
                token_type_ids=None,
                use_one_hot_embeddings=False,
@@ -230,7 +231,7 @@ class BertModel(object):
             config.hidden_size,
             activation=tf.tanh,
             kernel_initializer=create_initializer(config.initializer_range),
-            trainable=False)
+            trainable=train_pooler)
 
   def get_pooled_output(self):
     return self.pooled_output

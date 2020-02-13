@@ -193,7 +193,8 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
         input_ids=masked_input_ids,
         input_mask=input_mask,
         token_type_ids=segment_ids,
-        use_one_hot_embeddings=use_one_hot_embeddings)
+        use_one_hot_embeddings=use_one_hot_embeddings,
+        train_pooler=False)
 
     (masked_lm_loss,
      masked_lm_example_loss, masked_lm_log_probs) = get_masked_lm_output(

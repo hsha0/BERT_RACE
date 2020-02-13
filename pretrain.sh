@@ -1,8 +1,8 @@
-TPU_NAME='grpc://10.93.191.82:8470'
+TPU_NAME='grpc://10.40.249.138:8470'
 BERT_GC='gs://bert_sh'
 
 python3 run_pretraining.py \
---input_file=gs://electra/data_128_CLS/*.tfrecord \
+--input_file=gs://electra/data_128_sent_CLS/*.tfrecord \
 --output_dir=$BERT_GC/bert_pretrain/bert_5e-4 \
 --bert_config_file=$BERT_GC/small_config.json \
 --vocab_file=vocab.txt \
