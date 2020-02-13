@@ -1,6 +1,6 @@
 TPU_NAME='grpc://10.8.246.2:8470'
 BERT_GC='gs://bert_sh'
-INIT_CKPT=gs://bert_sh/bert_pretrain/bert_5e-4/model.ckpt-200000
+INIT_CKPT=gs://bert_sh/bert_pretrain/bert_5e-4/model.ckpt-225000
 TASK=MRPC
 
 python3 run_classifier.py \
