@@ -250,6 +250,18 @@ class BertModel(object):
   def get_all_encoder_layers(self):
     return self.all_encoder_layers
 
+  def get_word_embedding_output(self):
+    """Get output of the word(piece) embedding lookup.
+
+    This is BEFORE positional embeddings and token type embeddings have been
+    added.
+
+    Returns:
+      float Tensor of shape [batch_size, seq_length, hidden_size] corresponding
+      to the output of the word(piece) embedding layer.
+    """
+    return self.word_embedding_output
+
   def get_embedding_output(self):
     """Gets output of the embedding lookup (i.e., input to the transformer).
 
