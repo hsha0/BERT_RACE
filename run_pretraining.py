@@ -24,6 +24,7 @@ import optimization
 import tokenization
 import tensorflow as tf
 import random
+import tf_slim as slim
 
 
 
@@ -116,29 +117,42 @@ masked_token = ["[MASK]"]
 tokenizer = tokenization.FullTokenizer(
         vocab_file=FLAGS.vocab_file, do_lower_case=True)
 MASK_ID = tokenizer.convert_tokens_to_ids(masked_token)[0]
+def model_summary():
+
+    model_tvars = tf.trainable_variables()
+    slim.model_analyzer.analyze_vars(model_tvars, print_info=True)
 
 def replace_elements_by_indices(old, new, indices):
     old_shape = modeling.get_shape_list(old)
+    print(old_shape)
     batch_size = old_shape[0]
     seq_length = old_shape[1]
 
 
     flat_offsets = tf.reshape(
         tf.range(0, batch_size, dtype=tf.int32) * seq_length, [-1, 1])
+    print(flat_offsets)
     flat_positions = tf.reshape(indices + flat_offsets, [-1])
+    print(flat_positions)
 
     zeros = tf.zeros(tf.shape(input=flat_positions)[0], dtype=tf.int32)
+    print(zeros)
 
     flat_old = tf.reshape(old, [-1])
+    print(flat_old)
 
     masked_lm_mask = tf.compat.v1.sparse_to_dense(flat_positions, tf.shape(input=flat_old), zeros, default_value=1,
                                         validate_indices=True, name="masked_lm_mask")
+    print(masked_lm_mask)
 
     flat_old_temp = tf.multiply(flat_old, masked_lm_mask)
+    print(flat_old_temp)
     new_temp = tf.compat.v1.sparse_to_dense(flat_positions, tf.shape(input=flat_old), new,
                                                         default_value=0, validate_indices=True, name=None)
+    print(new_temp)
 
     updated_old = tf.reshape(flat_old_temp + new_temp, old_shape)
+    print(updated_old)
 
     return updated_old
 
@@ -201,6 +215,7 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
          bert_config, model.get_sequence_output(), model.get_embedding_table(),
          masked_lm_positions, masked_lm_ids, masked_lm_weights)
 
+    model_summary()
 
     total_loss = masked_lm_loss
 
@@ -239,6 +254,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
           loss=total_loss,
           train_op=train_op,
           scaffold_fn=scaffold_fn)
+
+      tf.profiler.profile(
+          tf.get_default_graph(),
+          options=tf.profiler.ProfileOptionBuilder.float_operation())
+
     elif mode == tf.estimator.ModeKeys.EVAL:
 
       def metric_fn(masked_lm_example_loss, masked_lm_log_probs, masked_lm_ids,
