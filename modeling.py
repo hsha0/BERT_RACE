@@ -37,6 +37,7 @@ class BertConfig(object):
                num_hidden_layers=12,
                num_attention_heads=12,
                intermediate_size=3072,
+               embedding_size=128,
                hidden_act="gelu",
                hidden_dropout_prob=0.1,
                attention_probs_dropout_prob=0.1,
@@ -78,6 +79,7 @@ class BertConfig(object):
     self.max_position_embeddings = max_position_embeddings
     self.type_vocab_size = type_vocab_size
     self.initializer_range = initializer_range
+    self.embedding_size = embedding_size
 
   @classmethod
   def from_dict(cls, json_object):
@@ -172,10 +174,10 @@ class BertModel(object):
     with tf.variable_scope(scope, default_name="bert"):
       with tf.variable_scope("embeddings"):
         # Perform embedding lookup on the word ids.
-        (self.embedding_output, self.embedding_table) = embedding_lookup(
+        (self.word_embedding_output, self.embedding_table) = embedding_lookup(
             input_ids=input_ids,
             vocab_size=config.vocab_size,
-            embedding_size=config.hidden_size,
+            embedding_size=config.embedding_size,
             initializer_range=config.initializer_range,
             word_embedding_name="word_embeddings",
             use_one_hot_embeddings=use_one_hot_embeddings)
@@ -183,7 +185,7 @@ class BertModel(object):
         # Add positional embeddings and token type embeddings, then layer
         # normalize and perform dropout.
         self.embedding_output = embedding_postprocessor(
-            input_tensor=self.embedding_output,
+            input_tensor=self.word_embedding_output,
             use_token_type=True,
             token_type_ids=token_type_ids,
             token_type_vocab_size=config.type_vocab_size,
@@ -807,21 +809,27 @@ def transformer_model(input_tensor,
 
   attention_head_size = int(hidden_size / num_attention_heads)
   input_shape = get_shape_list(input_tensor, expected_rank=3)
+  input_width = input_shape[2]
   batch_size = input_shape[0]
   seq_length = input_shape[1]
-  input_width = input_shape[2]
 
   # The Transformer performs sum residuals on all layers so the input needs
   # to be the same as the hidden size.
   if input_width != hidden_size:
-    raise ValueError("The width of the input tensor (%d) != hidden size (%d)" %
-                     (input_width, hidden_size))
+    prev_output = dense_layer_2d(
+        input_tensor, hidden_size, create_initializer(initializer_range),
+        None, name="embedding_hidden_mapping_in")
+  else:
+    prev_output = input_tensor
+  input_shape = get_shape_list(input_tensor, expected_rank=3)
+
 
   # We keep the representation as a 2D tensor to avoid re-shaping it back and
   # forth from a 3D tensor to a 2D tensor. Re-shapes are normally free on
   # the GPU/CPU but may not be free on the TPU, so we want to minimize them to
   # help the optimizer.
-  prev_output = reshape_to_matrix(input_tensor)
+
+  #prev_output = reshape_to_matrix(input_tensor)
 
   all_layer_outputs = []
   for layer_idx in range(num_hidden_layers):
@@ -861,6 +869,8 @@ def transformer_model(input_tensor,
               hidden_size,
               kernel_initializer=create_initializer(initializer_range))
           attention_output = dropout(attention_output, hidden_dropout_prob)
+
+          layer_input = tf.reshape(layer_input, tf.shape(attention_output))
           attention_output = layer_norm(attention_output + layer_input)
 
       # The activation is only applied to the "intermediate" hidden layer.
@@ -891,6 +901,7 @@ def transformer_model(input_tensor,
   else:
     final_output = reshape_from_matrix(prev_output, input_shape)
     return final_output
+
 
 
 def get_shape_list(tensor, expected_rank=None, name=None):
