@@ -754,6 +754,43 @@ def attention_layer(from_tensor,
   return context_layer
 
 
+def dense_layer_2d(input_tensor,
+                   output_size,
+                   initializer,
+                   activation,
+                   num_attention_heads=1,
+                   name=None):
+  """A dense layer with 2D kernel.
+
+  Args:
+    input_tensor: Float tensor with rank 3.
+    output_size: The size of output dimension.
+    initializer: Kernel initializer.
+    activation: Activation function.
+    num_attention_heads: number of attention head in attention layer.
+    name: The name scope of this layer.
+
+  Returns:
+    float logits Tensor.
+  """
+  del num_attention_heads  # unused
+  input_shape = get_shape_list(input_tensor)
+  hidden_size = input_shape[2]
+  with tf.variable_scope(name):
+    w = tf.get_variable(
+        name="kernel",
+        shape=[hidden_size, output_size],
+        initializer=initializer)
+    b = tf.get_variable(
+        name="bias", shape=[output_size], initializer=tf.zeros_initializer)
+    ret = tf.einsum("BFH,HO->BFO", input_tensor, w)
+    ret += b
+  if activation is not None:
+    return activation(ret)
+  else:
+    return ret
+
+
 def transformer_model(input_tensor,
                       attention_mask=None,
                       hidden_size=768,
