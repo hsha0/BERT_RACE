@@ -255,9 +255,11 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
           train_op=train_op,
           scaffold_fn=scaffold_fn)
 
+      """
       tf.profiler.profile(
           tf.get_default_graph(),
           options=tf.profiler.ProfileOptionBuilder.float_operation())
+      """
 
 
     elif mode == tf.estimator.ModeKeys.EVAL:
