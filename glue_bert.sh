@@ -18,7 +18,7 @@ python3 run_classifier.py \
 --bert_config_file=$BERT_GC/small_config.json \
 --task_name=$TASK \
 --data_dir=gs://electra/glue/glue_data/$TASK \
---output_dir=$BERT_GC/glue_results/bert_small/${TASK}_${SEED} \
+--output_dir=gs://electra/glue/glue_results/bert_small/${TASK}_${SEED} \
 --init_checkpoint=$INIT_CKPT \
 --vocab_file=vocab.txt \
 --do_train=True \
