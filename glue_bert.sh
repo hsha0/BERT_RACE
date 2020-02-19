@@ -2,7 +2,7 @@ TPU_NAME='grpc://10.23.23.154:8470'
 BERT_GC='gs://bert_sh'
 INIT_CKPT='gs://electra/electra_pretrain/bert_small_seq128_lr5e-4/model.ckpt-237000'
 SEED=12345
-TASK_INDEX=1
+TASK_INDEX=2
 
 TASKS=(MRPC CoLA MNLI SST-2 QQP QNLI WNLI RTE STS-B)
 LRS=(2e-5 1e-5 3e-5 1e-5 5e-5 1e-5 2e-5 3e-5 2e-5)
