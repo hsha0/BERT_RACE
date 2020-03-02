@@ -1072,7 +1072,6 @@ def get_config():
     return config
 
 def main(_):
-  tf.compat.v1.set_random_seed(FLAGS.seed)
   tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.INFO)
 
   processors = {

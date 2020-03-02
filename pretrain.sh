@@ -5,8 +5,8 @@ TRAIN_STEP=179000
 MAX_SEQ_L=128
 
 python3 run_pretraining.py \
---input_file=gs://electra/data_128_CLS_0.1short/*.tfrecord \
---output_dir=gs://electra/electra_pretrain/bert_small_seq${MAX_SEQ_L}_lr${LR}_0.1short \
+--input_file=gs://electra/data_128_sent_CLS/*.tfrecord \
+--output_dir=gs://electra/electra_pretrain/bert_small_seq${MAX_SEQ_L}_lr${LR} \
 --bert_config_file=small_config.json \
 --vocab_file=vocab.txt \
 --do_train=True \
