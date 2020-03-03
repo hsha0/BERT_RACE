@@ -279,6 +279,9 @@ class MnliProcessor(DataProcessor):
     """See base class."""
     return ["contradiction", "entailment", "neutral"]
 
+  def get_examples_num(self):
+      return 392702
+
   def _create_examples(self, lines, set_type):
     """Creates examples for the training and dev sets."""
     examples = []
@@ -375,6 +378,9 @@ class ColaProcessor(DataProcessor):
         label = tokenization.convert_to_unicode(line[1])
       examples.append(
           InputExample(guid=guid, text_a=text_a, text_b=None, label=label))
+
+    if set_type == 'dev':
+        return examples[:-3]
     return examples
 
 class SST2Processor(DataProcessor):
@@ -396,6 +402,9 @@ class SST2Processor(DataProcessor):
     def get_labels(self):
         """See base class."""
         return ["0", "1"]
+
+    def get_examples_num(self):
+        return 67349
 
     def _create_examples(self, lines, set_type):
         """Creates examples for the training and dev sets."""
@@ -433,6 +442,12 @@ class QQPProcessor(DataProcessor):
         """See base class."""
         return ["0", "1"]
 
+    def get_examples_num(self):
+        return 363846
+
+    def get_dev_examples_num(self):
+        return 40430
+
     def _create_examples(self, lines, set_type):
         """Create examples for the training and dev sets."""
         examples = []
@@ -440,7 +455,7 @@ class QQPProcessor(DataProcessor):
             if i == 0:
                 continue
             guid = "%s-%s" % (set_type, tokenization.convert_to_unicode(line[0]))
-            if set_type == "train":
+            if set_type == "train" or set_type == 'dev':
                 text_a = tokenization.convert_to_unicode(line[3])
                 text_b = tokenization.convert_to_unicode(line[4])
             else:
@@ -510,6 +525,9 @@ class QNLIProcessor(DataProcessor):
     def get_labels(self):
         """See base class."""
         return ["entailment", "not_entailment"]
+
+    def get_examples_num(self):
+        return 104743
 
     def _create_examples(self, lines, set_type):
         """Create examples for the training and dev sets."""
@@ -584,6 +602,7 @@ class WNLIProcessor(DataProcessor):
     def get_labels(self):
         """See base class."""
         return ["0", "1"]
+
 
     def _create_examples(self, lines, set_type):
         """Create examples for the training and dev sets."""
@@ -941,19 +960,32 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 
       def metric_fn(per_example_loss, label_ids, logits, is_real_example):
         if regression:
+            #correlation = tfp.stats.correlation(x=tf.reshape(logits,[-1]), y=label_ids, event_axis=None)
+            #print(correlation)
+            #correlation = tf.compat.v1.metrics.mean(correlation)
+            pearsonr = tf.contrib.metrics.streaming_pearson_correlation(logits, label_ids, weights=is_real_example)
             loss = tf.compat.v1.metrics.mean(values=per_example_loss, weights=is_real_example)
+
             return {
+                "eval_pearsonr": pearsonr,
                 "eval_loss": loss,
             }
         elif FLAGS.task_name == "CoLA":
             predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
             loss = tf.compat.v1.metrics.mean(values=per_example_loss, weights=is_real_example)
-            #mcc = tf.compat.v1.metrics.mean(mcc_metric(y_true=label_ids, y_pred=predictions))
             accuracy = tf.compat.v1.metrics.accuracy(
                 labels=label_ids, predictions=predictions, weights=is_real_example)
+
+            mcc = mcc_metric(y_true=label_ids, y_pred=predictions)
+            mcc = tf.compat.v1.metrics.mean(values=mcc)
+
+            #mcc = MatthewsCorrelationCoefficient(num_classes=1)
+            #update_op = mcc.update_state(y_true=label_ids, y_pred=predictions, sample_weight=is_real_example)
             return {
+                "eval_mcc": mcc,
                 "eval_accuracy": accuracy,
                 "eval_loss": loss,
+
             }
         else:
             predictions = tf.argmax(input=logits, axis=-1, output_type=tf.int32)
@@ -986,12 +1018,14 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
 def mcc_metric(y_true, y_pred):
     predicted = y_pred
     true_pos = tf.math.count_nonzero(predicted * y_true)
-    true_neg = tf.math.count_nonzero((predicted - tf.ones(shape=tf.shape(input=predicted), dtype=tf.int32)) * (y_true - tf.ones(shape=tf.shape(input=predicted), dtype=tf.int32)))
-    false_pos = tf.math.count_nonzero(predicted * (y_true - tf.ones(shape=tf.shape(input=predicted) , dtype=tf.int32)))
+    true_neg = tf.math.count_nonzero((predicted - tf.ones(shape=tf.shape(input=predicted), dtype=tf.int32)) * (
+                y_true - tf.ones(shape=tf.shape(input=predicted), dtype=tf.int32)))
+    false_pos = tf.math.count_nonzero(predicted * (y_true - tf.ones(shape=tf.shape(input=predicted), dtype=tf.int32)))
     false_neg = tf.math.count_nonzero((predicted - tf.ones(shape=tf.shape(input=predicted), dtype=tf.int32)) * y_true)
-    x = tf.cast((true_pos + false_pos + 1) * (true_pos + false_neg + 1) * (true_neg + false_pos + 1) * (true_neg + false_neg + 1), tf.float32)
+    x = tf.cast((true_pos + false_pos) * (true_pos + false_neg) * (true_neg + false_pos) * (
+                true_neg + false_neg), tf.float32)
 
-    return tf.cast((true_pos * true_neg) - (false_pos * false_neg), tf.float32) / tf.sqrt(x)
+    return tf.math.divide_no_nan(tf.cast((true_pos * true_neg) - (false_pos * false_neg), tf.float32), tf.sqrt(x))
 
 # This function is not used by this file but is still used by the Colab and
 # people who depend on it.
@@ -1105,7 +1139,7 @@ def main(_):
   tf.io.gfile.makedirs(FLAGS.output_dir)
 
   task_name = FLAGS.task_name.lower()
-
+  if task_name == 'wnli': sys.exit("WNLI")
   if task_name not in processors:
     raise ValueError("Task not found: %s" % (task_name))
 
@@ -1135,11 +1169,19 @@ def main(_):
   train_examples = None
   num_train_steps = None
   num_warmup_steps = None
+  tfrecord_tasks = ['mnli', 'sst-2', 'qqp', 'qnli']
   if FLAGS.do_train:
-    train_examples = processor.get_train_examples(FLAGS.data_dir)
-    num_train_steps = int(
-        len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
-    num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
+      if task_name in tfrecord_tasks:
+          num_examples = processor.get_examples_num()
+          num_train_steps = int(num_examples / FLAGS.train_batch_size * FLAGS.num_train_epochs)
+          num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
+
+      else:
+          train_examples = processor.get_train_examples(FLAGS.data_dir)
+          num_train_steps = int(
+              len(train_examples) / FLAGS.train_batch_size * FLAGS.num_train_epochs)
+          num_warmup_steps = int(num_train_steps * FLAGS.warmup_proportion)
+          num_examples = len(train_examples)
 
   regression = False
   if task_name == 'sts-b': regression = True
@@ -1166,11 +1208,14 @@ def main(_):
       predict_batch_size=FLAGS.predict_batch_size)
 
   if FLAGS.do_train:
-    train_file = os.path.join(FLAGS.output_dir, "train.tf_record")
-    file_based_convert_examples_to_features(
-        train_examples, label_list, FLAGS.max_seq_length, tokenizer, train_file)
+    if task_name in tfrecord_tasks:
+        train_file = os.path.join(FLAGS.data_dir, "train.tf_record")
+    else:
+        train_file = os.path.join(FLAGS.output_dir, "train.tf_record")
+        file_based_convert_examples_to_features(
+            train_examples, label_list, FLAGS.max_seq_length, tokenizer, train_file)
     tf.compat.v1.logging.info("***** Running training *****")
-    tf.compat.v1.logging.info("  Num examples = %d", len(train_examples))
+    tf.compat.v1.logging.info("  Num examples = %d", num_examples)
     tf.compat.v1.logging.info("  Batch size = %d", FLAGS.train_batch_size)
     tf.compat.v1.logging.info("  Num steps = %d", num_train_steps)
     train_input_fn = file_based_input_fn_builder(
@@ -1181,23 +1226,33 @@ def main(_):
     estimator.train(input_fn=train_input_fn, max_steps=num_train_steps)
 
   if FLAGS.do_eval:
-    eval_examples = processor.get_dev_examples(FLAGS.data_dir)
-    num_actual_eval_examples = len(eval_examples)
-    if FLAGS.use_tpu:
-      # TPU requires a fixed batch size for all batches, therefore the number
-      # of examples must be a multiple of the batch size, or else examples
-      # will get dropped. So we pad with fake examples which are ignored
-      # later on. These do NOT count towards the metric (all tf.metrics
-      # support a per-instance weight, and these get a weight of 0.0).
-      while len(eval_examples) % FLAGS.eval_batch_size != 0:
-        eval_examples.append(PaddingInputExample())
+    if task_name == 'qqp':
+        num_actual_eval_examples = processor.get_dev_examples_num()
+    else:
+        eval_examples = processor.get_dev_examples(FLAGS.data_dir)
+        num_actual_eval_examples = len(eval_examples)
+        if FLAGS.use_tpu:
+          # TPU requires a fixed batch size for all batches, therefore the number
+          # of examples must be a multiple of the batch size, or else examples
+          # will get dropped. So we pad with fake examples which are ignored
+          # later on. These do NOT count towards the metric (all tf.metrics
+          # support a per-instance weight, and these get a weight of 0.0).
+          while len(eval_examples) % FLAGS.eval_batch_size != 0:
+            eval_examples.append(PaddingInputExample())
 
-    eval_file = os.path.join(FLAGS.output_dir, "eval.tf_record")
-    file_based_convert_examples_to_features(
-        eval_examples, label_list, FLAGS.max_seq_length, tokenizer, eval_file)
+    if task_name == 'qqp':
+        eval_file = os.path.join(FLAGS.data_dir, "eval.tf_record")
+    else:
+        eval_file = os.path.join(FLAGS.output_dir, "eval.tf_record")
+        file_based_convert_examples_to_features(
+            eval_examples, label_list, FLAGS.max_seq_length, tokenizer, eval_file)
 
     tf.compat.v1.logging.info("***** Running evaluation *****")
-    tf.compat.v1.logging.info("  Num examples = %d (%d actual, %d padding)",
+    if task_name == 'qqp':
+        tf.compat.v1.logging.info("  Num examples = %d (%d actual, %d padding)",
+                                  40432, 40430, 2)
+    else:
+        tf.compat.v1.logging.info("  Num examples = %d (%d actual, %d padding)",
                     len(eval_examples), num_actual_eval_examples,
                     len(eval_examples) - num_actual_eval_examples)
     tf.compat.v1.logging.info("  Batch size = %d", FLAGS.eval_batch_size)
@@ -1207,8 +1262,11 @@ def main(_):
     # However, if running eval on the TPU, you will need to specify the
     # number of steps.
     if FLAGS.use_tpu:
-      assert len(eval_examples) % FLAGS.eval_batch_size == 0
-      eval_steps = int(len(eval_examples) // FLAGS.eval_batch_size)
+      if task_name == 'qqp':
+        eval_steps = int(40432 // FLAGS.eval_batch_size)
+      else:
+        assert len(eval_examples) % FLAGS.eval_batch_size == 0
+        eval_steps = int(len(eval_examples) // FLAGS.eval_batch_size)
 
     eval_drop_remainder = True if FLAGS.use_tpu else False
     eval_input_fn = file_based_input_fn_builder(
