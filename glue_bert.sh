@@ -1,4 +1,4 @@
-TPU_NAME='grpc://10.120.209.186:8470'
+TPU_NAME='grpc://10.73.61.42:8470'
 BERT_GC='gs://bert_sh'
 INIT_CKPT='gs://electra/electra_pretrain/bert_small_seq128_lr5e-4/model.ckpt-179000'
 SEED=$$
