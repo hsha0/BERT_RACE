@@ -20,6 +20,8 @@ LR=${LRS[${TASK_INDEX}]}
 BZ=${BZS[${TASK_INDEX}]}
 EPOCH=${EPOCHS[${TASK_INDEX}]}
 
+echo ${SEED}_${TASK}_${LR}_${BZ}_${EPOCH}
+
 python3 run_classifier.py \
 --bert_config_file=$BERT_GC/small_config.json \
 --task_name=$TASK \
