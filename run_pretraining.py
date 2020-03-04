@@ -24,6 +24,7 @@ import optimization
 import tokenization
 import tensorflow as tf
 import random
+import sys
 import tf_slim as slim
 
 
@@ -62,6 +63,10 @@ flags.DEFINE_integer(
     "max_predictions_per_seq", 20,
     "Maximum number of masked LM predictions per sequence. "
     "Must match data generation.")
+
+flags.DEFINE_string(
+    "opt", 'adam', 'Optimizer.'
+)
 
 flags.DEFINE_bool("do_train", False, "Whether to run training.")
 
@@ -247,8 +252,16 @@ def model_fn_builder(bert_config, init_checkpoint, learning_rate,
 
     output_spec = None
     if mode == tf.estimator.ModeKeys.TRAIN:
-      train_op = optimization.create_optimizer(
+      if FLAGS.opt == 'lamb':
+        train_op = optimization.create_lamb_optimizer(
           total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu, weight_decay=0.01)
+
+      elif FLAGS.opt == 'adam':
+        train_op = optimization.create_adam_optimizer(
+              total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu, weight_decay=0.01)
+
+      else:
+        sys.exit(FLAGS.opt, 'does not exist.')
 
       output_spec = tf.contrib.tpu.TPUEstimatorSpec(
           mode=mode,
