@@ -1,13 +1,13 @@
 TPU_NAME='grpc://10.22.27.138:8470'
 LR=5e-4
 TRAIN_STEP=163000
-OPT=adam
+OPT=lamb
 
 MAX_SEQ_L=128
 
 python3 run_pretraining.py \
 --input_file=gs://electra/data_128_CLS_0.1short/*.tfrecord \
---output_dir=gs://electra/electra_pretrain/bert_small_seq${MAX_SEQ_L}_lr${LR}_${OPT}_lm_weight \
+--output_dir=gs://electra/electra_pretrain/delete_bert_small_seq${MAX_SEQ_L}_lr${LR}_${OPT}_lm_weight \
 --bert_config_file=small_config.json \
 --vocab_file=vocab.txt \
 --do_train=True \
