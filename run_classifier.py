@@ -948,7 +948,7 @@ def model_fn_builder(bert_config, num_labels, init_checkpoint, learning_rate,
     output_spec = None
     if mode == tf.estimator.ModeKeys.TRAIN:
 
-      train_op = optimization.create_optimizer(
+      train_op = optimization.create_lamb_optimizer(
           total_loss, learning_rate, num_train_steps, num_warmup_steps, use_tpu, FLAGS.train_batch_size)
 
       output_spec = tf.compat.v1.estimator.tpu.TPUEstimatorSpec(
