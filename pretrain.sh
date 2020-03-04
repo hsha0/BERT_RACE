@@ -15,7 +15,7 @@ python3 run_pretraining.py \
 --train_batch_size=1024 \
 --max_seq_length=${MAX_SEQ_L} \
 --num_train_steps=${TRAIN_STEP} \
---opt=${OPT}
+--opt=${OPT} \
 --max_predictions_per_seq=20 \
 --save_checkpoints_steps=1000 \
 --iterations_per_loop=1000 \
