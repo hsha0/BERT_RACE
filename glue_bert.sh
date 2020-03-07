@@ -1,6 +1,6 @@
-TPU_NAME='grpc://10.73.61.42:8470'
+TPU_NAME='grpc://10.58.63.90:8470'
 BERT_GC='gs://bert_sh'
-INIT_CKPT='gs://electra/electra_pretrain/bert_small_seq128_lr5e-4_lm_weight/model.ckpt-179000'
+INIT_CKPT='gs://electra/electra_pretrain/bert_small_seq128_lr5e-4_lamb_163k/model.ckpt-163000'
 SEED=$$
 TASK_INDEX=$1
 
