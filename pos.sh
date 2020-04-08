@@ -1,7 +1,7 @@
 #export PATH=/usr/local/cuda-9.0/bin:$PATH
 #export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-9.0/lib64/
 #12345 66666 22001 78925 11982 67877 987123 65492 98045 652343
-TPU_NAME='grpc://10.99.172.170:8470'
+TPU_NAME='grpc://10.54.139.170:8470'
 
 BERT_GC='gs://bert_sh/BERT_LARGE/wwm_cased_L-24_H-1024_A-16'
 DATA_PATH='/content/POS'
@@ -10,7 +10,7 @@ DATA_PATH='/content/POS'
 
 declare -a SEEDS=(11982 67877 987123 65492 98045 652343)
 
-for run in $(seq 1 6)
+for run in $(seq 1 1)
 do
     current_time=$(date "+%y%m%d-%H%M%S")
     SEED=${SEEDS[$run-1]}
